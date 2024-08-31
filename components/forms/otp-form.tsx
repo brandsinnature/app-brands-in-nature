@@ -20,8 +20,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LuArrowRight } from "react-icons/lu";
-import { login } from "@/data-access/auth";
-import { toast } from "sonner";
 import { IOtpForm, OtpFormSchema } from "./otp.schema";
 import {
     InputOTP,
@@ -40,10 +38,6 @@ export default function OtpForm() {
 
     const onSubmit = async (formData: IOtpForm) => {
         return;
-
-        const res = await login(formData);
-
-        if (res?.error) return toast(res.error);
     };
 
     const loading = form.formState.isSubmitting;

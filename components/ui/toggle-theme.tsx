@@ -1,19 +1,38 @@
 "use client";
 
-import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CgSpinner } from "react-icons/cg";
+import { useState } from "react";
+import { logout } from "@/data-access/auth";
+import { toast } from "sonner";
 
 export function ThemeToggle() {
-    const { setTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
+    const [loading, setLoading] = useState(false);
+
+    const handleLogout = async () => {
+        if (loading) return;
+
+        setLoading(true);
+
+        const res = await logout();
+        if (!res?.error) return;
+
+        setLoading(false);
+        toast.error(res.error);
+    };
 
     return (
         <DropdownMenu>
@@ -25,14 +44,32 @@ export function ThemeToggle() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
+                <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                    checked={theme === "light"}
+                    onCheckedChange={() => setTheme("light")}
+                >
                     Light
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                    checked={theme === "dark"}
+                    onCheckedChange={() => setTheme("dark")}
+                >
                     Dark
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                    checked={theme === "system"}
+                    onCheckedChange={() => setTheme("system")}
+                >
                     System
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                    {loading && (
+                        <CgSpinner className="mr-2 animate-spin" size={20} />
+                    )}{" "}
+                    Logout
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

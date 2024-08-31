@@ -52,7 +52,7 @@ export default function LoginForm() {
     const loading = form.formState.isSubmitting;
 
     useEffect(() => {
-        toast.error(error_description);
+        if (error_description) toast.error(error_description);
     }, [error_description]);
 
     return (
