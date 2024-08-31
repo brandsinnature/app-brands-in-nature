@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CameraIcon, SwitchCamera, Zap, ZapOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, CameraType } from "react-camera-pro";
 
 export default function ScanRcc() {
@@ -11,6 +11,11 @@ export default function ScanRcc() {
     const [numberOfCameras, setNumberOfCameras] = useState(0);
     const [torchToggled, setTorchToggled] = useState<boolean>(false);
     const [image, setImage] = useState<string | null>(null);
+    const [showTourButton, setShowTourButton] = useState<boolean>(false);
+
+    useEffect(() => {
+        setShowTourButton(camera.current?.torchSupported || false);
+    }, [camera.current?.torchSupported]);
 
     return (
         <div>
@@ -50,7 +55,7 @@ export default function ScanRcc() {
                 <div className="right-5 bottom-16 z-50 fixed flex items-center gap-5">
                     <Button
                         size={"icon"}
-                        className="bg-white/80 rounded-full"
+                        className="bg-black/80 dark:bg-white/80 rounded-full"
                         disabled={numberOfCameras <= 1}
                         onClick={() => {
                             if (camera.current) camera.current.switchCamera();
@@ -59,10 +64,10 @@ export default function ScanRcc() {
                         <SwitchCamera />
                     </Button>
 
-                    {camera.current?.torchSupported && (
+                    {showTourButton && (
                         <Button
                             size={"icon"}
-                            className="bg-white/80 rounded-full"
+                            className="bg-black/80 dark:bg-white/80 rounded-full"
                             onClick={() => {
                                 if (camera.current) {
                                     setTorchToggled(
