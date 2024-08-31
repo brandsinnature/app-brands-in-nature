@@ -1,6 +1,12 @@
+"use client";
 import Container from "@/components/ui/container";
-import Image from "next/image";
+import { BarcodeScanner } from "react-barcode-scanner";
+import "react-barcode-scanner/polyfill";
 
 export default function Home() {
-    return <Container>Home</Container>;
+    return (
+        <Container>
+            <BarcodeScanner />
+        </Container>
+    );
 }
