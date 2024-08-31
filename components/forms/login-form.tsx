@@ -25,23 +25,35 @@ import { Button } from "@/components/ui/button";
 import { LuArrowRight } from "react-icons/lu";
 import { login } from "@/data-access/auth";
 import { toast } from "sonner";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
+    const search = useSearchParams();
+    const error_description = search.get("error_description");
+
     const form = useForm<ILoginForm>({
         resolver: zodResolver(LoginFormSchema),
         defaultValues: {
-            phone: "",
+            email: "",
         },
     });
 
     const onSubmit = async (formData: ILoginForm) => {
-        const res = await login(formData);
+        const { error, message } = await login(formData);
 
-        if (res?.error) return toast(res.error);
+        if (error) return toast(error);
+
+        toast.success(message);
+        form.reset();
     };
 
     const loading = form.formState.isSubmitting;
+
+    useEffect(() => {
+        toast.error(error_description);
+    }, [error_description]);
 
     return (
         <Form {...form}>
@@ -54,15 +66,15 @@ export default function LoginForm() {
                     <CardContent className="space-y-6">
                         <FormField
                             control={form.control}
-                            name="phone"
+                            name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Phone number</FormLabel>
+                                    <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <PhoneInput
-                                            id="phone"
-                                            placeholder="Enter phone"
-                                            international
+                                        <Input
+                                            type="email"
+                                            id="email"
+                                            placeholder="john@example.com"
                                             {...field}
                                         />
                                     </FormControl>
@@ -74,7 +86,7 @@ export default function LoginForm() {
 
                     <CardFooter className="justify-end">
                         <Button disabled={loading} loading={loading}>
-                            Continue
+                            Send Magic Link
                             <LuArrowRight className="ms-2" />
                         </Button>
                     </CardFooter>

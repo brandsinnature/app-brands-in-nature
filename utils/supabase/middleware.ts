@@ -8,7 +8,7 @@ export async function updateSession(request: NextRequest) {
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
             cookies: {
                 getAll() {
@@ -41,10 +41,14 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    if (
+        !user &&
+        !request.nextUrl.pathname.startsWith("/login") &&
+        !request.nextUrl.pathname.startsWith("/auth")
+    ) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone();
-        url.pathname = "/";
+        url.pathname = "/login";
         return NextResponse.redirect(url);
     }
 
