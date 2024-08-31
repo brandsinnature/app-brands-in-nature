@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CameraIcon, SwitchCamera, Zap, ZapOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Camera, CameraType } from "react-camera-pro";
 
 export default function ScanRcc() {
@@ -11,11 +11,6 @@ export default function ScanRcc() {
     const [numberOfCameras, setNumberOfCameras] = useState(0);
     const [torchToggled, setTorchToggled] = useState<boolean>(false);
     const [image, setImage] = useState<string | null>(null);
-    const [showTourButton, setShowTourButton] = useState<boolean>(false);
-
-    useEffect(() => {
-        setShowTourButton(camera.current?.torchSupported || false);
-    }, [camera.current?.torchSupported]);
 
     return (
         <div>
@@ -33,9 +28,9 @@ export default function ScanRcc() {
                         "It is not possible to switch camera to different one because there is only one video device accessible.",
                     canvas: "Canvas is not supported.",
                 }}
-                // videoReadyCallback={() => {
-                //     console.log("Video feed ready.");
-                // }}
+                videoReadyCallback={() => {
+                    console.log("Video feed ready.");
+                }}
             />
 
             <div className="">
@@ -64,7 +59,7 @@ export default function ScanRcc() {
                         <SwitchCamera />
                     </Button>
 
-                    {showTourButton && (
+                    {camera.current?.torchSupported && (
                         <Button
                             size={"icon"}
                             className="bg-black/80 dark:bg-white/80 rounded-full"
