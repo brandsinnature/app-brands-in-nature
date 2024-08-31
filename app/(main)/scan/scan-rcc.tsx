@@ -59,7 +59,7 @@ export default function ScanRcc() {
                         <SwitchCamera />
                     </Button>
 
-                    {!camera.current?.torchSupported && (
+                    {camera.current?.torchSupported && (
                         <Button
                             size={"icon"}
                             className="bg-white/80 rounded-full"
