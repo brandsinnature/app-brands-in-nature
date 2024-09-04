@@ -68,6 +68,18 @@ const config: Config = {
                     "5": "hsl(var(--chart-5))",
                 },
             },
+            height: {
+                body: "calc(100vh - 7.1rem)",
+            },
+            keyframes: {
+                scan: {
+                    "0%": { transform: "translatey(0px)" },
+                    "100%": { transform: "translatey(240px)" },
+                },
+            },
+            animation: {
+                scanning: "scan 1.5s linear alternate infinite",
+            },
         },
     },
     plugins: [require("tailwindcss-animate")],
