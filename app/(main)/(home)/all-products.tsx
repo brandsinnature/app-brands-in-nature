@@ -11,7 +11,7 @@ export default async function AllProducts() {
                 <ProductCard key={product.ean} product={product} />
             ))}
             {products.length === 0 && (
-                <div className="space-y-2 mt-10 text-center text-muted-foreground">
+                <div className="space-y-2 mt-40 text-center text-muted-foreground">
                     <PackageSearch
                         className="mx-auto"
                         size={100}

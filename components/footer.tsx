@@ -10,10 +10,10 @@ export default function Footer() {
 
     if (pathname === "/login") return <></>;
 
-    const isScan = pathname === "/scan";
+    const isScan = pathname.startsWith("/scan");
 
     return (
-        <footer className="bottom-0 z-50 fixed flex justify-around items-center bg-background py-3 border-t w-full text-sm">
+        <footer className="bottom-0 z-50 fixed flex justify-around items-center bg-background py-4 border-t w-full text-sm">
             <Link
                 href={"/"}
                 className={cn(

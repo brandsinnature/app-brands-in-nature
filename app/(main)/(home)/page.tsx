@@ -2,10 +2,15 @@ import Container from "@/components/ui/container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AllProducts from "./all-products";
 import MyProducts from "./my-products";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Dashboard",
+};
 
 export default function Home() {
     return (
-        <Container className="p-3">
+        <Container>
             <Tabs defaultValue="all" className="space-y-6">
                 <TabsList>
                     <TabsTrigger value="all">All Products</TabsTrigger>

@@ -20,7 +20,7 @@ export async function getProductByUpc(upc: string) {
 
     const data = await res.json();
 
-    return { data: data.items[0] };
+    return { data: data.total > 0 ? data.items[0] : { ean: upc } };
 }
 
 export async function createProduct(product: IProduct | null) {

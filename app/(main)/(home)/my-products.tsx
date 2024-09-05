@@ -12,7 +12,7 @@ export default async function MyProducts() {
             ))}
 
             {products.length === 0 && (
-                <div className="space-y-2 mt-10 text-center text-muted-foreground">
+                <div className="space-y-2 mt-20 text-center text-muted-foreground">
                     <PackageSearch
                         className="mx-auto"
                         size={100}

@@ -3,6 +3,8 @@ import { IProduct } from "@/utils/common.interface";
 import { PackageSearch } from "lucide-react";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
 
 type Props = {
     product: IProduct;
@@ -17,9 +19,9 @@ export default function ProductCard({ product, showReturn = false }: Props) {
                     {product?.category || "--"}
                 </p>
             </CardHeader>
-            <CardContent className="space-y-3 px-3 py-2">
+            <CardContent className="space-y-6 px-3 py-2">
                 <div className="flex items-center gap-2">
-                    <Avatar className="w-12 h-12">
+                    <Avatar className="w-14 h-14">
                         <AvatarImage
                             src={product?.images[0]}
                             alt={product?.title}
@@ -29,9 +31,14 @@ export default function ProductCard({ product, showReturn = false }: Props) {
                         </AvatarFallback>
                     </Avatar>
 
-                    <p className="font-medium text-sm">
-                        {product?.title || "--"}
-                    </p>
+                    <div className="space-y-1">
+                        <p className="text-muted-foreground text-xs">
+                            #{product?.ean}
+                        </p>
+                        <p className="font-medium text-sm">
+                            {product?.title || "--"}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -41,6 +48,18 @@ export default function ProductCard({ product, showReturn = false }: Props) {
                         {product.dimension}/{product.size}
                     </Badge>
                 </div>
+
+                {/* <div className="flex justify-between items-center">
+                    {product.created_at && (
+                        <div className="text-muted-foreground text-xs">
+                            <p className="italic">
+                                Added on:{" "}
+                                {format(new Date(product.created_at), "PP")}
+                            </p>
+                        </div>
+                    )}
+                    <Button size={"sm"}>Return</Button>
+                </div> */}
             </CardContent>
         </Card>
     );

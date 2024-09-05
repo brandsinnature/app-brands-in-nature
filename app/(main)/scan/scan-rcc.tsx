@@ -25,6 +25,9 @@ export default function ScanRcc() {
         onDecodeResult(result) {
             setCode(result.getText());
         },
+        onError(error) {
+            toast.error(`error: ${error}`);
+        },
     });
 
     useEffect(() => {
@@ -54,6 +57,12 @@ export default function ScanRcc() {
         fetchProduct();
     }, [code]);
 
+    useEffect(() => {
+        if (open) return;
+
+        setCode("");
+    }, [open]);
+
     return (
         <div>
             <video ref={ref} className="w-screen h-body object-cover" />
@@ -62,7 +71,7 @@ export default function ScanRcc() {
                 <div className="relative w-[369px] h-[369px]">
                     <Scan size={369} strokeWidth={0.25} className="absolute" />
 
-                    {!open && (
+                    {!open && !loading && (
                         <div className="absolute inset-0 p-20 text-center">
                             <FaBarcode size={128} className="mx-auto" />
                             <p className="font-semibold text-pretty">
@@ -107,7 +116,12 @@ export default function ScanRcc() {
                 )}
             </div>
 
-            <ProductDrawer open={open} setOpen={setOpen} product={product} />
+            <ProductDrawer
+                open={open}
+                setOpen={setOpen}
+                product={product}
+                code={code}
+            />
         </div>
     );
 }

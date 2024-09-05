@@ -7,8 +7,11 @@ import NextTopLoader from "nextjs-toploader";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Brands In Nature",
-    description: "Brands In Nature",
+    title: {
+        template: "%s | BIN",
+        default: "Brands In Nature",
+    },
+    description: "BIN - Brands In Nature",
 };
 
 export default function RootLayout({

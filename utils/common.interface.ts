@@ -12,6 +12,7 @@ export interface IProduct {
     category: string;
     images: string[];
     elid: string;
+    created_at?: string;
 }
 
 export interface IJwtPayload extends JwtPayload {}

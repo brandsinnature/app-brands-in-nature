@@ -69,7 +69,7 @@ const config: Config = {
                 },
             },
             height: {
-                body: "calc(100vh - 7.1rem)",
+                body: "calc(100vh - 7.5rem)",
             },
             keyframes: {
                 scan: {
