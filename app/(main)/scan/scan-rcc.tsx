@@ -3,12 +3,19 @@
 import ProductDrawer from "@/components/product-drawer";
 import { Button } from "@/components/ui/button";
 import { Scan, Zap, ZapOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useZxing } from "react-zxing";
+import { FaBarcode } from "react-icons/fa";
+import { IProduct } from "@/utils/common.interface";
+import { toast } from "sonner";
+import { getProductByUpc } from "@/data-access/product";
+import { CgSpinner } from "react-icons/cg";
 
 export default function ScanRcc() {
-    const [result, setResult] = useState("");
+    const [code, setCode] = useState("");
     const [open, setOpen] = useState(false);
+    const [product, setProduct] = useState<IProduct | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const {
         ref,
@@ -16,10 +23,36 @@ export default function ScanRcc() {
     } = useZxing({
         paused: open,
         onDecodeResult(result) {
-            setResult(result.getText());
-            setOpen(true);
+            setCode(result.getText());
         },
     });
+
+    useEffect(() => {
+        async function fetchProduct() {
+            if (!code) return setProduct(null);
+
+            setLoading(true);
+
+            try {
+                const { data, error } = await getProductByUpc(code);
+
+                if (error) {
+                    toast.error(error);
+                    return setProduct(null);
+                }
+
+                setProduct(data);
+            } catch (error) {
+                toast.error("An error occurred while fetching the product.");
+                setProduct(null);
+            } finally {
+                setLoading(false);
+                setOpen(true);
+            }
+        }
+
+        fetchProduct();
+    }, [code]);
 
     return (
         <div>
@@ -30,12 +63,26 @@ export default function ScanRcc() {
                     <Scan size={369} strokeWidth={0.25} className="absolute" />
 
                     {!open && (
-                        <div className="absolute inset-0 p-16 overflow-hidden">
-                            <div className="bg-primary to-transparent w-60 h-1 animate-scanning"></div>
+                        <div className="absolute inset-0 p-20 text-center">
+                            <FaBarcode size={128} className="mx-auto" />
+                            <p className="font-semibold text-pretty">
+                                Point your mobile phone towards the
+                                package&apos;s barcode to scan
+                            </p>
                         </div>
                     )}
                 </div>
             </div>
+
+            {loading && (
+                <div className="top-1/2 left-1/2 fixed -translate-x-1/2 -translate-y-1/2">
+                    <CgSpinner
+                        className="animate-spin"
+                        size={64}
+                        strokeWidth={0.5}
+                    />
+                </div>
+            )}
 
             <div className="right-5 bottom-16 z-50 fixed flex items-center gap-5">
                 {/* <Button
@@ -60,7 +107,7 @@ export default function ScanRcc() {
                 )}
             </div>
 
-            <ProductDrawer open={open} setOpen={setOpen} code={result} />
+            <ProductDrawer open={open} setOpen={setOpen} product={product} />
         </div>
     );
 }

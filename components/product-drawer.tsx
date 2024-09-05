@@ -8,12 +8,11 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-    DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { createProduct, getProductByUpc } from "@/data-access/product";
+import { createProduct } from "@/data-access/product";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PackageSearch } from "lucide-react";
 import { IProduct } from "@/utils/common.interface";
@@ -22,42 +21,13 @@ import { useRouter } from "next/navigation";
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
-    code: string;
+    product: IProduct | null;
 };
 
-export default function ProductDrawer({ open, setOpen, code }: Props) {
+export default function ProductDrawer({ open, setOpen, product }: Props) {
     const router = useRouter();
 
-    const [product, setProduct] = useState<IProduct | null>(null);
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        async function fetchProduct() {
-            if (!code) {
-                setProduct(null);
-                return;
-            }
-
-            setLoading(true);
-
-            try {
-                const { data, error } = await getProductByUpc(code);
-                if (error) {
-                    toast.error(error);
-                    return setProduct(null);
-                }
-
-                setProduct(data);
-            } catch (error) {
-                toast.error("An error occurred while fetching the product.");
-                setProduct(null);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchProduct();
-    }, [code]);
 
     const handleProductCreate = async () => {
         setLoading(true);
@@ -81,7 +51,7 @@ export default function ProductDrawer({ open, setOpen, code }: Props) {
                 <div className="mx-auto w-full max-w-sm">
                     <DrawerHeader className="text-left">
                         <DrawerTitle>Product details</DrawerTitle>
-                        <DrawerDescription>#{code}</DrawerDescription>
+                        <DrawerDescription>#{product?.ean}</DrawerDescription>
                     </DrawerHeader>
                     <div className="space-y-3 p-4">
                         <div className="flex items-center gap-3">

@@ -54,3 +54,47 @@ export async function createProduct(product: IProduct | null) {
 
     return { data };
 }
+
+export async function getAllProducts() {
+    const supabase = createClient();
+
+    const {
+        data: { session },
+        error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError) return [];
+
+    const jwt: IJwtPayload = jwtDecode(session?.access_token || "");
+
+    const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .neq("created_by", jwt?.sub);
+
+    if (error) return [];
+
+    return data;
+}
+
+export async function getMyProducts() {
+    const supabase = createClient();
+
+    const {
+        data: { session },
+        error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError) return [];
+
+    const jwt: IJwtPayload = jwtDecode(session?.access_token || "");
+
+    const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("created_by", jwt?.sub);
+
+    if (error) return [];
+
+    return data;
+}
