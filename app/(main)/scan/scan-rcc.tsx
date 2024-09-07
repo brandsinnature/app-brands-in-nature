@@ -23,6 +23,7 @@ export default function ScanRcc() {
         torch: { on, off, isOn, isAvailable },
     } = useZxing({
         paused: !isVisible || open,
+        timeBetweenDecodingAttempts: 50,
         onDecodeResult(result) {
             setCode(result.getText());
         },
