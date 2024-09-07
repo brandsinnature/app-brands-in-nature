@@ -16,12 +16,13 @@ export default function ScanRcc() {
     const [open, setOpen] = useState(false);
     const [product, setProduct] = useState<CompleteProduct | null>(null);
     const [loading, setLoading] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     const {
         ref,
         torch: { on, off, isOn, isAvailable },
     } = useZxing({
-        paused: open,
+        paused: !isVisible || open,
         onDecodeResult(result) {
             setCode(result.getText());
         },
@@ -29,6 +30,19 @@ export default function ScanRcc() {
             toast.error(`error: ${error}`);
         },
     });
+
+    useEffect(() => {
+        const handleVisibilityChange = () => setIsVisible(!document.hidden);
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
+    }, []);
 
     useEffect(() => {
         async function fetchProduct() {
