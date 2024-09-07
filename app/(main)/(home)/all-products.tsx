@@ -1,5 +1,6 @@
 import ProductCard from "@/components/product-card";
 import { getAllProducts } from "@/data-access/product";
+import { IProduct } from "@/utils/common.interface";
 import { PackageSearch } from "lucide-react";
 
 export default async function AllProducts() {
@@ -8,7 +9,10 @@ export default async function AllProducts() {
     return (
         <div className="space-y-4">
             {products.map((product) => (
-                <ProductCard key={product.ean} product={product} />
+                <ProductCard
+                    key={product.id}
+                    product={product as unknown as IProduct}
+                />
             ))}
             {products.length === 0 && (
                 <div className="space-y-2 mt-40 text-center text-muted-foreground">

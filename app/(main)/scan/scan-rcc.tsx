@@ -6,15 +6,15 @@ import { Scan, Zap, ZapOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useZxing } from "react-zxing";
 import { FaBarcode } from "react-icons/fa";
-import { IProduct } from "@/utils/common.interface";
+import { CompleteProduct } from "@/utils/common.interface";
 import { toast } from "sonner";
-import { getProductByUpc } from "@/data-access/product";
+import { getProductByGtin } from "@/data-access/product";
 import { CgSpinner } from "react-icons/cg";
 
 export default function ScanRcc() {
     const [code, setCode] = useState("");
     const [open, setOpen] = useState(false);
-    const [product, setProduct] = useState<IProduct | null>(null);
+    const [product, setProduct] = useState<CompleteProduct | null>(null);
     const [loading, setLoading] = useState(false);
 
     const {
@@ -37,7 +37,7 @@ export default function ScanRcc() {
             setLoading(true);
 
             try {
-                const { data, error } = await getProductByUpc(code);
+                const { data, error } = await getProductByGtin(code);
 
                 if (error) {
                     toast.error(error);

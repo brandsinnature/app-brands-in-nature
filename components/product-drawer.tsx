@@ -15,14 +15,15 @@ import { toast } from "sonner";
 import { createProduct } from "@/data-access/product";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PackageSearch } from "lucide-react";
-import { IProduct } from "@/utils/common.interface";
+import { CompleteProduct } from "@/utils/common.interface";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { format } from "date-fns";
 
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
-    product: IProduct | null;
+    product: CompleteProduct | null;
     code: string;
 };
 
@@ -37,7 +38,7 @@ export default function ProductDrawer({ open, setOpen, product, code }: Props) {
                     </DrawerHeader>
 
                     {product ? (
-                        product?.title ? (
+                        product?.brand ? (
                             <ProductCardView product={product} />
                         ) : (
                             <NoProductFoundView code={code} />
@@ -51,14 +52,14 @@ export default function ProductDrawer({ open, setOpen, product, code }: Props) {
     );
 }
 
-const ProductCardView = ({ product }: { product: IProduct }) => {
+const ProductCardView = ({ product }: { product: CompleteProduct }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
     const handleProductCreate = async () => {
         setLoading(true);
 
-        const { data, error } = await createProduct(product);
+        const { error } = await createProduct(product);
 
         setLoading(false);
 
@@ -74,8 +75,8 @@ const ProductCardView = ({ product }: { product: IProduct }) => {
                 <div className="flex items-center gap-3">
                     <Avatar className="w-20 h-20">
                         <AvatarImage
-                            src={product?.images[0]}
-                            alt={product?.title}
+                            src={`${product?.images?.front}`}
+                            alt={product?.name || "--"}
                         />
                         <AvatarFallback>
                             <PackageSearch size={44} strokeWidth={1} />
@@ -84,45 +85,60 @@ const ProductCardView = ({ product }: { product: IProduct }) => {
 
                     <div className="space-y-1">
                         <p className="text-muted-foreground text-sm">
-                            {product?.category || "--"}
+                            {product?.category || "--"} &#x3e;{" "}
+                            {product?.sub_category || "--"}
                         </p>
-                        <p className="font-semibold">
-                            {product?.title || "--"}
-                        </p>
+                        <p className="font-semibold">{product?.name || "--"}</p>
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 ps-3">
-                        <p className="text-muted-foreground text-sm">Model:</p>
-                        <p className="font-semibold">
-                            {product?.model || "--"}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2 ps-3">
+                <div className="space-y-2 ps-3">
+                    <p className="text-muted-foreground text-sm">
+                        {product?.description}
+                    </p>
+                    <div className="flex items-center gap-2">
                         <p className="text-muted-foreground text-sm">Brand:</p>
                         <p className="font-semibold">
                             {product?.brand || "--"}
                         </p>
                     </div>
-                    <div className="flex items-center gap-2 ps-3">
-                        <p className="text-muted-foreground text-sm">Color:</p>
-                        <p className="font-semibold">
-                            {product?.color || "--"}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2 ps-3">
-                        <p className="text-muted-foreground text-sm">Weight:</p>
-                        <p className="font-semibold">
-                            {product?.weight || "--"}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2 ps-3">
+                    <div className="flex items-center gap-2">
                         <p className="text-muted-foreground text-sm">
-                            Dimension/Size:
+                            Country of Origin:
                         </p>
                         <p className="font-semibold">
-                            {product?.dimension || "--"}/{product?.size || "--"}
+                            {product?.country_of_origin || "--"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
+                            Sku Code:
+                        </p>
+                        <p className="font-semibold">
+                            {product?.sku_code || "--"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
+                            Packaging Type:
+                        </p>
+                        <p className="font-semibold">
+                            {product?.packaging_type || "--"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
+                            Activation Date:
+                        </p>
+                        <p className="font-semibold">
+                            {format(
+                                new Date(
+                                    (product?.activation_date ||
+                                        product?.created_date) ??
+                                        ""
+                                ),
+                                "PP"
+                            )}
                         </p>
                     </div>
                 </div>
