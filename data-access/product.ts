@@ -10,6 +10,16 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
 
 export async function getProductByGtin(gtin: string) {
+    const supabase = createClient();
+
+    const { data: existingProduct } = await supabase
+        .from("products")
+        .select("*")
+        .eq("gtin", gtin)
+        .single();
+
+    if (existingProduct) return { data: existingProduct };
+
     const res = await fetch(
         `https://gs1datakart.org/dkapi/product?gtin=${gtin}`,
         {
@@ -27,7 +37,6 @@ export async function getProductByGtin(gtin: string) {
         };
 
     const data = await res.json();
-    console.log("🚀 ~ getProductByGtin ~ data:", data);
 
     return {
         data:

@@ -56,6 +56,16 @@ const ProductCardView = ({ product }: { product: CompleteProduct }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
+    const isProductValid =
+        product?.name &&
+        product?.brand &&
+        product?.category &&
+        product?.sub_category &&
+        product?.description &&
+        product?.country_of_origin &&
+        product?.weights_and_measures?.net_weight &&
+        product?.weights_and_measures?.measurement_unit;
+
     const handleProductCreate = async () => {
         setLoading(true);
 
@@ -144,14 +154,46 @@ const ProductCardView = ({ product }: { product: CompleteProduct }) => {
                 </div>
             </div>
             <DrawerFooter className="gap-4">
-                <Button
-                    onClick={handleProductCreate}
-                    disabled={loading}
-                    loading={loading}
-                    type="submit"
-                >
-                    Add product
-                </Button>
+                {isProductValid ? (
+                    <Button
+                        onClick={handleProductCreate}
+                        disabled={loading}
+                        loading={loading}
+                        type="submit"
+                    >
+                        Add product
+                    </Button>
+                ) : (
+                    <div>
+                        <Link
+                            href={`/scan/${product?.gtin ?? ""}?name=${
+                                product?.name ?? ""
+                            }&brand=${product?.brand ?? ""}&category=${
+                                product?.category ?? ""
+                            }&sub_category=${
+                                product?.sub_category ?? ""
+                            }&description=${
+                                product?.description ?? ""
+                            }&country_of_origin=${
+                                product?.country_of_origin ?? ""
+                            }&net_weight=${
+                                product?.weights_and_measures?.net_weight ?? ""
+                            }&measurement_unit=${
+                                product?.weights_and_measures
+                                    ?.measurement_unit ?? ""
+                            }`}
+                        >
+                            <Button
+                                disabled={loading}
+                                loading={loading}
+                                type="button"
+                                className="w-full"
+                            >
+                                Complete product details
+                            </Button>
+                        </Link>
+                    </div>
+                )}
                 <DrawerClose asChild>
                     <Button variant="outline" disabled={loading} type="button">
                         Close

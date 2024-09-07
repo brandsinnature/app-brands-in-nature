@@ -20,7 +20,7 @@ export default function ProductCard({
     return (
         <Card className="p-3">
             <CardHeader className="p-0 pb-3">
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-xs capitalize">
                     {product?.category || "--"} &#x3e;{" "}
                     {product?.sub_category || "--"}
                 </p>
@@ -29,7 +29,7 @@ export default function ProductCard({
                 <div className="flex items-center gap-2">
                     <Avatar className="w-14 h-14">
                         <AvatarImage
-                            src={product.images.front}
+                            src={product?.images?.front}
                             alt={product?.name || "--"}
                         />
                         <AvatarFallback>
