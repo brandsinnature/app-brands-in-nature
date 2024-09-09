@@ -5,17 +5,22 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "./ui/button";
 import { format } from "date-fns";
+import Link from "next/link";
 
 type Props = {
     product: IProduct;
-    showReturn?: boolean;
     purchaseDate?: string;
+    buyId?: string;
+    status?: string;
+    returnedAt?: string;
 };
 
 export default function ProductCard({
     product,
-    showReturn = false,
     purchaseDate,
+    buyId,
+    status,
+    returnedAt,
 }: Props) {
     return (
         <Card className="p-3">
@@ -63,13 +68,31 @@ export default function ProductCard({
                         )}
                     </div>
 
-                    {showReturn && (
+                    {buyId && (
                         <div className="flex justify-between items-center">
-                            <p className="text-muted-foreground text-xs italic">
-                                Purchased on:{" "}
-                                {format(purchaseDate ?? Date.now(), "PP")}
-                            </p>
-                            <Button size={"sm"}>Return</Button>
+                            <div className="space-y-0.5">
+                                <p className="text-muted-foreground text-xs italic">
+                                    Purchased on:{" "}
+                                    {format(purchaseDate ?? Date.now(), "PP")}
+                                </p>
+                                {returnedAt && (
+                                    <p className="text-muted-foreground text-xs italic">
+                                        Returned on:{" "}
+                                        {format(returnedAt ?? Date.now(), "PP")}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                {status === "bought" ? (
+                                    <Link href={`/return/${buyId}`}>
+                                        <Button size={"sm"}>Return</Button>
+                                    </Link>
+                                ) : (
+                                    <Badge className="uppercase">
+                                        {status}
+                                    </Badge>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

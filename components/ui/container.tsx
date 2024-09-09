@@ -6,5 +6,5 @@ type Props = {
 };
 
 export default function Container({ children, className }: Props) {
-    return <div className={cn("p-3", className)}>{children}</div>;
+    return <div className={cn("p-3 mb-20", className)}>{children}</div>;
 }

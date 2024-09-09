@@ -13,7 +13,9 @@ export default async function MyProducts() {
                     key={mp.id}
                     product={mp.product as unknown as IProduct}
                     purchaseDate={mp.created_at}
-                    showReturn
+                    buyId={mp.id}
+                    status={mp.status}
+                    returnedAt={mp.returned_at}
                 />
             ))}
 

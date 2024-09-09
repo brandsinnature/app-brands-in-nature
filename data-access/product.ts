@@ -4,6 +4,7 @@ import {
     CompleteProduct,
     IJwtPayload,
     IProduct,
+    IReturn,
 } from "@/utils/common.interface";
 import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -170,11 +171,56 @@ export async function getMyProducts() {
     const { data, error } = await supabase
         .from("products_bought")
         .select(
-            "id, created_by, created_at, product_id, product:products!product_id(id, gtin, brand, name, category, images, sub_category, description, weights_and_measures)"
+            "id, created_by, created_at, product_id, status, returned_at, product:products!product_id(id, gtin, brand, name, category, images, sub_category, description, weights_and_measures)"
         )
         .eq("created_by", jwt?.sub);
 
     if (error) return [];
 
     return data;
+}
+
+export async function returnProduct({
+    accuracy,
+    buyId,
+    latitude,
+    longitude,
+    pa: upi,
+    pn: name,
+}: IReturn) {
+    const supabase = createClient();
+
+    let { data: merchant } = await supabase
+        .from("merchants")
+        .select("id")
+        .eq("upi", upi)
+        .single();
+
+    if (!merchant?.id) {
+        const { data, error } = await supabase
+            .from("merchants")
+            .upsert({ upi, name })
+            .select("id")
+            .single();
+
+        if (error) return { error: error.message };
+        merchant = data;
+    }
+
+    const { data, error: updateError } = await supabase
+        .from("products_bought")
+        .update({
+            status: "returned",
+            returned_to: merchant?.id,
+            returned_at: new Date().toISOString(),
+            latitude,
+            longitude,
+            accuracy,
+        })
+        .eq("id", buyId)
+        .eq("status", "bought");
+
+    if (updateError) return { error: updateError.message };
+
+    return { data };
 }

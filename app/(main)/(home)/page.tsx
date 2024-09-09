@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function Home() {
     return (
         <Container>
-            <Tabs defaultValue="all" className="space-y-6 mb-20">
+            <Tabs defaultValue="all" className="space-y-6">
                 <TabsList>
                     <TabsTrigger value="all">All Products</TabsTrigger>
                     <TabsTrigger value="my">My Products</TabsTrigger>

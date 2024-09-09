@@ -25,6 +25,8 @@ import { createProduct } from "@/data-access/product";
 import { CompleteProduct } from "@/utils/common.interface";
 import { toast } from "sonner";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Title from "@/components/ui/title";
+import Container from "./ui/container";
 
 const formSchema = z.object({
     brand: z.string().min(1, "Brand is required"),
@@ -79,8 +81,8 @@ export default function CreateProductForm() {
     const isLoading = form.formState.isSubmitting;
 
     return (
-        <div className="space-y-6 mx-auto mb-20 p-4 max-w-md">
-            <p className="font-semibold text-lg">Create Product Form</p>
+        <Container className="space-y-6">
+            <Title text="Create Product Form" />
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -277,6 +279,6 @@ export default function CreateProductForm() {
                     </Button>
                 </form>
             </Form>
-        </div>
+        </Container>
     );
 }

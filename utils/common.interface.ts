@@ -230,4 +230,14 @@ export interface ProductAttributes {
     recycling_instructions: string | null;
     disposal_methods: string | null;
 }
+
 export interface IJwtPayload extends JwtPayload {}
+
+export interface IReturn {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    pa: string;
+    pn: string;
+    buyId: string;
+}
