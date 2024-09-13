@@ -16,6 +16,7 @@ import {
     DataCaptureView,
     FrameSourceState,
     LaserlineViewfinder,
+    TorchSwitchControl,
 } from "scandit-web-datacapture-core";
 
 export interface SDK {
@@ -46,6 +47,7 @@ export function createSDKFacade(): SDK {
     let overlay: BarcodeCaptureOverlay | undefined;
     let host: HTMLElement | undefined;
     let cameraSwitchControl: CameraSwitchControl | undefined;
+    let torchSwitchControl: TorchSwitchControl | undefined;
     let camera: Camera | undefined;
 
     function createHostElementIfNeeded(): HTMLElement {
@@ -104,6 +106,9 @@ export function createSDKFacade(): SDK {
             cameraSwitchControl = new CameraSwitchControl();
             view.addControl(cameraSwitchControl);
 
+            torchSwitchControl = new TorchSwitchControl();
+            view.addControl(torchSwitchControl);
+
             barcodeCapture = await BarcodeCapture.forContext(context, settings);
             await barcodeCapture.setEnabled(false);
 
@@ -134,6 +139,10 @@ export function createSDKFacade(): SDK {
             if (cameraSwitchControl) {
                 view?.removeControl(cameraSwitchControl);
                 cameraSwitchControl = undefined;
+            }
+            if (torchSwitchControl) {
+                view?.removeControl(torchSwitchControl);
+                torchSwitchControl = undefined;
             }
             view?.detachFromElement();
             laserLineViewFinder = undefined;

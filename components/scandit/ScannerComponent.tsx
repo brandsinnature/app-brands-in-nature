@@ -7,6 +7,7 @@ import type {
 
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
+import { getProductByGtin } from "@/data-access/product";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
@@ -26,10 +27,15 @@ export default function ScannerComponent() {
                 session: BarcodeCaptureSession
             ) => {
                 if (session.newlyRecognizedBarcodes.length > 0) {
+                    const gtin = session.newlyRecognizedBarcodes[0].data;
+
                     await sdk.enableScanning(false);
                     await shouldKeepCameraOn();
                     setBarcode(session.newlyRecognizedBarcodes[0]);
 
+                    await getProductByGtin(`${gtin}`);
+
+                    //handle barcode data
                     alert(session.newlyRecognizedBarcodes[0].data);
                 }
             },
