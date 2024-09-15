@@ -1,7 +1,9 @@
 "use server";
 
 import { ILoginForm } from "@/components/forms/login.schema";
+import { IJwtPayload } from "@/utils/common.interface";
 import { createClient } from "@/utils/supabase/server";
+import { jwtDecode } from "jwt-decode";
 import { redirect } from "next/navigation";
 
 export async function login(loginForm: ILoginForm) {
@@ -38,4 +40,19 @@ export async function logout() {
     if (error) return { error: error.message };
 
     redirect("/login");
+}
+
+export async function getSessionUserId() {
+    const client = createClient();
+
+    const {
+        data: { session },
+        error,
+    } = await client.auth.getSession();
+
+    if (error) return null;
+
+    const jwt: IJwtPayload = jwtDecode(session?.access_token || "");
+
+    return jwt?.sub;
 }

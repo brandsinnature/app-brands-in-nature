@@ -9,6 +9,7 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
+import { getSessionUserId } from "./auth";
 
 export async function getProductByGtin(gtin: string) {
     const supabase = createClient();
@@ -39,11 +40,15 @@ export async function getProductByGtin(gtin: string) {
 
     const data = await res.json();
 
+    const product =
+        data?.pageInfo?.totalResults > 0
+            ? data.items[0]
+            : data?.gepir[0] ?? { gtin };
+
+    if (!product.name) product.name = gtin;
+
     return {
-        data:
-            data?.pageInfo?.totalResults > 0
-                ? data.items[0]
-                : data?.gepir[0] ?? { gtin },
+        data: product,
     };
 }
 
@@ -223,4 +228,87 @@ export async function returnProduct({
     if (updateError) return { error: updateError.message };
 
     return { data };
+}
+
+export async function addProductToCart(product: IProduct) {
+    const supabase = createClient();
+
+    const created_by = await getSessionUserId();
+    if (!created_by) return { error: "User not found" };
+
+    if (!product.id) {
+        const { data, error } = await supabase
+            .from("products")
+            .upsert(
+                {
+                    gtin: product.gtin,
+                    brand: product.brand,
+                    name: product.name,
+                    category: product.category,
+                    images: product.images,
+                    sub_category: product.sub_category,
+                    description: product.description,
+                    weights_and_measures: product.weights_and_measures,
+                    created_by,
+                },
+                { onConflict: "gtin" }
+            )
+            .select("id")
+            .single();
+
+        product.id = data?.id;
+
+        if (error) return { error: error.message };
+    }
+
+    const { data, error } = await supabase.from("cart").insert({
+        product_id: product.id,
+        quantity: 1,
+        created_by,
+    });
+
+    if (error) return { error: error.message };
+
+    return { data };
+}
+
+export async function getAllCartItems() {
+    const supabase = createClient();
+
+    const created_by = await getSessionUserId();
+    if (!created_by) return [];
+
+    const { data, error } = await supabase
+        .from("cart")
+        .select(
+            "id, product_id, quantity, created_at, product:products!product_id(id, gtin, brand, name, images, description)"
+        )
+        .eq("created_by", created_by);
+
+    if (error) return [];
+
+    return data;
+}
+
+export async function removeProductFromCart(cartId: string) {
+    const supabase = createClient();
+
+    const { error } = await supabase.from("cart").delete().eq("id", cartId);
+
+    if (error) return { error: error.message };
+
+    return { message: "Product removed from cart" };
+}
+
+export async function updateCartQuantity(cartId: string, quantity: number) {
+    const supabase = createClient();
+
+    const { error } = await supabase
+        .from("cart")
+        .update({ quantity })
+        .eq("id", cartId);
+
+    if (error) return { error: error.message };
+
+    return { message: "Cart updated" };
 }

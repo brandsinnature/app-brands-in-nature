@@ -11,6 +11,8 @@ export interface Store {
     setBarcode: Dispatch<SetStateAction<Barcode | undefined>>;
     setKeepCameraOn: Dispatch<SetStateAction<boolean>>;
     setSymbologies: Dispatch<Partial<Record<Symbology, boolean>>>;
+    loading: boolean;
+    setLoading: Dispatch<SetStateAction<boolean>>;
 }
 
 export const StoreContext = createContext<Store>({
@@ -20,6 +22,8 @@ export const StoreContext = createContext<Store>({
     setBarcode: () => {},
     setKeepCameraOn: () => {},
     setSymbologies: () => {},
+    loading: false,
+    setLoading: () => {},
 });
 
 export interface StoreProviderProps {
@@ -33,6 +37,7 @@ export function StoreProvider({ children }: StoreProviderProps): JSX.Element {
     const [symbologies, setSymbologies] = useState<
         Partial<Record<Symbology, boolean>>
     >({});
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (loaded) {
@@ -58,8 +63,10 @@ export function StoreProvider({ children }: StoreProviderProps): JSX.Element {
                     setKeepCameraOn,
                     symbologies,
                     setSymbologies,
+                    loading,
+                    setLoading,
                 }),
-                [barcode, keepCameraOn, symbologies]
+                [barcode, keepCameraOn, loading, symbologies]
             )}
         >
             {children}

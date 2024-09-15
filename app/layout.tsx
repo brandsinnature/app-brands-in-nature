@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
-
-const inter = Inter({ subsets: ["latin"] });
+import { poppins, voska, voskaOutline } from "@/lib/font";
 
 export const metadata: Metadata = {
     title: {
@@ -21,7 +19,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={inter.className}>
+            <body
+                className={`${poppins.className} ${voska.variable} ${voskaOutline.variable}`}
+            >
                 <NextTopLoader showSpinner={false} />
                 <ThemeProvider
                     attribute="class"

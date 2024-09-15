@@ -241,3 +241,14 @@ export interface IReturn {
     pn: string;
     buyId: string;
 }
+
+export interface ICart {
+    id: string;
+    product_id: string;
+    created_at: string;
+    quantity: number;
+    product: Pick<
+        IProduct,
+        "gtin" | "brand" | "name" | "images" | "description"
+    >;
+}

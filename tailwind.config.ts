@@ -16,6 +16,10 @@ const config: Config = {
             },
         },
         extend: {
+            fontFamily: {
+                voska: ["var(--font-voska)"],
+                "voska-outline": ["var(--font-voska-outline)"],
+            },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
                 "gradient-conic":

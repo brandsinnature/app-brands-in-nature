@@ -1,8 +1,15 @@
+import { useTheme } from "next-themes";
+
 export interface SpinnerProps {
-    color: string;
+    color?: string;
 }
 
 export default function Spinner({ color }: SpinnerProps) {
+    const { theme } = useTheme();
+
+    if (theme === "dark") color = "white";
+    else color = "black";
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
     BarcodeCapture,
     BarcodeCaptureListener,
@@ -7,12 +7,19 @@ import type {
 
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
-import { getProductByGtin } from "@/data-access/product";
+import { addProductToCart, getProductByGtin } from "@/data-access/product";
+import { CgSpinnerAlt } from "react-icons/cg";
+import ProductDrawer from "../product-drawer";
+import { toast } from "sonner";
+import CartTrigger from "../cart-trigger";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
-    const { setBarcode, keepCameraOn } = useStore();
+    const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
+
+    const [open, setOpen] = useState(false);
+    const [product, setProduct] = useState(null);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) {
@@ -26,21 +33,28 @@ export default function ScannerComponent() {
                 _: BarcodeCapture,
                 session: BarcodeCaptureSession
             ) => {
+                setLoading(true);
                 if (session.newlyRecognizedBarcodes.length > 0) {
-                    const gtin = session.newlyRecognizedBarcodes[0].data;
+                    const scannedJson = session.newlyRecognizedBarcodes[0];
 
                     await sdk.enableScanning(false);
                     await shouldKeepCameraOn();
-                    setBarcode(session.newlyRecognizedBarcodes[0]);
+                    setBarcode(scannedJson);
 
-                    await getProductByGtin(`${gtin}`);
+                    const { data } = await getProductByGtin(
+                        `${scannedJson.data}`
+                    );
 
-                    //handle barcode data
-                    alert(session.newlyRecognizedBarcodes[0].data);
+                    setProduct(data);
+                    setOpen(true);
+
+                    const { error } = await addProductToCart(data);
+                    if (error) toast.error(error);
                 }
+                setLoading(false);
             },
         }),
-        [setBarcode, sdk, shouldKeepCameraOn]
+        [setLoading, sdk, shouldKeepCameraOn, setBarcode]
     );
 
     useEffect(() => {
@@ -63,5 +77,29 @@ export default function ScannerComponent() {
         };
     }, [loaded, sdk, onScan]);
 
-    return <div ref={host} className="w-full h-full" />;
+    useEffect(() => {
+        async function openHandler() {
+            if (!open) await sdk.enableScanning(true);
+        }
+
+        openHandler();
+    }, [open, sdk]);
+
+    return (
+        <>
+            <div ref={host} className="w-full h-full">
+                {loading && (
+                    <div className="top-1/2 left-1/2 z-50 absolute -translate-x-1/2 -translate-y-1/2">
+                        <CgSpinnerAlt className="mr-2 animate-spin" size={64} />
+                    </div>
+                )}
+            </div>
+
+            <ProductDrawer open={open} setOpen={setOpen} product={product} />
+
+            <div className="bottom-24 left-4 absolute">
+                <CartTrigger />
+            </div>
+        </>
+    );
 }
