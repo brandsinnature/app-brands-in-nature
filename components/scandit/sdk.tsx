@@ -223,6 +223,7 @@ export default function SDKProvider({
             await sdk.enableCamera(true);
         }
         void start();
+
         return () => {
             void sdk.cleanup();
         };
