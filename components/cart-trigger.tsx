@@ -21,7 +21,12 @@ import { Minus, Package, Plus } from "lucide-react";
 import { categorizeDate } from "@/lib/utils";
 import CartEditTrigger from "./cart-edit-trigger";
 
-export default function CartTrigger() {
+type Props = {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+};
+
+export default function CartTrigger({ open, setOpen }: Props) {
     const [cartItems, setCartItems] = useState<ICart[]>([]);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -88,10 +93,10 @@ export default function CartTrigger() {
     };
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size={"icon"} className="rounded-full">
-                    <TbShoppingBag size={24} />
+                <Button size={"icon"} className="rounded-full w-12 h-12">
+                    <TbShoppingBag size={28} />
                 </Button>
             </DialogTrigger>
             <DialogContent className="flex flex-col gap-10 w-screen h-dvh overflow-auto">
@@ -149,7 +154,7 @@ export default function CartTrigger() {
                                                             </AvatarFallback>
                                                         </Avatar>
 
-                                                        <div className="space-y-1">
+                                                        <div className="space-y-1 text-left">
                                                             <p className="font-medium text-left text-sm">
                                                                 {product?.name ||
                                                                     "--"}

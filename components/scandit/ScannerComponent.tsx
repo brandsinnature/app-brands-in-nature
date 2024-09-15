@@ -12,13 +12,16 @@ import { CgSpinnerAlt } from "react-icons/cg";
 import ProductDrawer from "../product-drawer";
 import { toast } from "sonner";
 import CartTrigger from "../cart-trigger";
+import { useRouter } from "next/navigation";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
     const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
+    const router = useRouter();
 
     const [open, setOpen] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
     const [product, setProduct] = useState(null);
 
     const shouldKeepCameraOn = useCallback(async () => {
@@ -50,6 +53,7 @@ export default function ScannerComponent() {
 
                     const { error } = await addProductToCart(data);
                     if (error) toast.error(error);
+                    router.refresh();
                 }
                 setLoading(false);
             },
@@ -85,6 +89,15 @@ export default function ScannerComponent() {
         openHandler();
     }, [open, sdk]);
 
+    useEffect(() => {
+        async function openHandler() {
+            if (cartOpen) await sdk.enableScanning(false);
+            else await sdk.enableScanning(true);
+        }
+
+        openHandler();
+    }, [cartOpen, sdk]);
+
     return (
         <>
             <div ref={host} className="w-full h-full">
@@ -98,7 +111,7 @@ export default function ScannerComponent() {
             <ProductDrawer open={open} setOpen={setOpen} product={product} />
 
             <div className="bottom-24 left-4 absolute">
-                <CartTrigger />
+                <CartTrigger open={cartOpen} setOpen={setCartOpen} />
             </div>
         </>
     );

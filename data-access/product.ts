@@ -10,6 +10,7 @@ import { createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
 import { getSessionUserId } from "./auth";
+import { revalidatePath } from "next/cache";
 
 export async function getProductByGtin(gtin: string) {
     const supabase = createClient();
@@ -286,6 +287,8 @@ export async function addProductToCart(product: IProduct) {
             p_created_by: created_by,
             p_status: "cart",
         });
+
+    revalidatePath("/scan", "page");
 
     return { data };
 }
