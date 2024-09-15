@@ -261,13 +261,31 @@ export async function addProductToCart(product: IProduct) {
         if (error) return { error: error.message };
     }
 
-    const { data, error } = await supabase.from("cart").insert({
-        product_id: product.id,
-        quantity: 1,
-        created_by,
-    });
+    const { data, error, count } = await supabase
+        .from("cart")
+        .upsert(
+            {
+                product_id: product.id,
+                created_by,
+                quantity: 1,
+                status: "cart",
+            },
+            {
+                onConflict: "product_id,created_by,status",
+                ignoreDuplicates: true,
+                count: "exact",
+            }
+        )
+        .select();
 
     if (error) return { error: error.message };
+
+    if (count === 0)
+        await supabase.rpc("increment_quantity", {
+            p_product_id: product.id,
+            p_created_by: created_by,
+            p_status: "cart",
+        });
 
     return { data };
 }

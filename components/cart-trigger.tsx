@@ -90,15 +90,11 @@ export default function CartTrigger() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button
-                    size={"icon"}
-                    className="rounded-full"
-                    disabled={totalItems < 1}
-                >
+                <Button size={"icon"} className="rounded-full">
                     <TbShoppingBag size={24} />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="gap-10 w-screen h-dvh overflow-auto">
+            <DialogContent className="flex flex-col gap-10 w-screen h-dvh overflow-auto">
                 <DialogHeader>
                     <DialogTitle className="bg-primary/30 mx-auto px-4 py-1 rounded-full w-fit font-medium text-sm">
                         Your bag
@@ -220,7 +216,7 @@ export default function CartTrigger() {
                         )}
                     </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="mt-auto w-full">
                     <Button type="submit">Deposit {totalItems} packages</Button>
                 </DialogFooter>
             </DialogContent>
