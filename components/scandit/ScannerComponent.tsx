@@ -18,7 +18,6 @@ export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
     const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
-    const router = useRouter();
 
     const [open, setOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
@@ -53,7 +52,6 @@ export default function ScannerComponent() {
 
                     const { error } = await addProductToCart(data);
                     if (error) toast.error(error);
-                    router.refresh();
                 }
                 setLoading(false);
             },

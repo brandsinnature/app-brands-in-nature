@@ -35,13 +35,13 @@ export default function CartTrigger({ open, setOpen }: Props) {
     );
 
     useEffect(() => {
-        async function fetchCart() {
-            const data = await getAllCartItems();
-            setCartItems(data as unknown as ICart[]);
-        }
-
         fetchCart();
     }, []);
+
+    async function fetchCart() {
+        const data = await getAllCartItems();
+        setCartItems(data as unknown as ICart[]);
+    }
 
     useEffect(() => {
         setIsMounted(true);
@@ -95,7 +95,11 @@ export default function CartTrigger({ open, setOpen }: Props) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size={"icon"} className="rounded-full w-12 h-12">
+                <Button
+                    size={"icon"}
+                    className="rounded-full w-12 h-12"
+                    onClick={fetchCart}
+                >
                     <TbShoppingBag size={28} />
                 </Button>
             </DialogTrigger>
