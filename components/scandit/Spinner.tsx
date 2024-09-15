@@ -10,6 +10,8 @@ export default function Spinner({ color }: SpinnerProps) {
     if (theme === "dark") color = "white";
     else color = "black";
 
+    if (!color) color = "white";
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
