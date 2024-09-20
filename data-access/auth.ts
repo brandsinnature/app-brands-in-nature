@@ -56,3 +56,18 @@ export async function getSessionUserId() {
 
     return jwt?.sub;
 }
+
+export async function getSessionUser() {
+    const client = createClient();
+
+    const {
+        data: { session },
+        error,
+    } = await client.auth.getSession();
+
+    if (error) return null;
+
+    const user: IJwtPayload = jwtDecode(session?.access_token || "");
+
+    return user;
+}

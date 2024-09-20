@@ -2,6 +2,7 @@
 
 import {
     CompleteProduct,
+    IGetRetailer,
     IJwtPayload,
     IProduct,
     IReturn,
@@ -64,20 +65,6 @@ export async function createProduct(product: CompleteProduct | null) {
 
     const jwt: IJwtPayload = jwtDecode(session?.access_token || "");
 
-    const { data: found_product } = await supabase
-        .from("products")
-        .select("id")
-        .eq("gtin", product?.gtin)
-        .single();
-
-    if (found_product?.id)
-        return await createProductBought(
-            supabase,
-            product?.gtin,
-            jwt?.sub,
-            found_product?.id
-        );
-
     const { data, error } = await supabase
         .from("products")
         .insert({
@@ -122,28 +109,6 @@ export async function createProduct(product: CompleteProduct | null) {
 
     if (error) return { error: error.message };
 
-    return await createProductBought(
-        supabase,
-        product?.gtin,
-        jwt?.sub,
-        data?.id
-    );
-}
-
-export async function createProductBought(
-    supabase: SupabaseClient,
-    gtin?: string,
-    created_by?: string,
-    product_id?: string
-) {
-    const { data, error } = await supabase.from("products_bought").insert({
-        gtin,
-        created_by,
-        product_id,
-    });
-
-    if (error) return { error: error.message };
-
     return { data };
 }
 
@@ -183,51 +148,6 @@ export async function getMyProducts() {
     if (error) return [];
 
     return data;
-}
-
-export async function returnProduct({
-    accuracy,
-    buyId,
-    latitude,
-    longitude,
-    pa: upi,
-    pn: name,
-}: IReturn) {
-    const supabase = createClient();
-
-    let { data: merchant } = await supabase
-        .from("merchants")
-        .select("id")
-        .eq("upi", upi)
-        .single();
-
-    if (!merchant?.id) {
-        const { data, error } = await supabase
-            .from("merchants")
-            .upsert({ upi, name })
-            .select("id")
-            .single();
-
-        if (error) return { error: error.message };
-        merchant = data;
-    }
-
-    const { data, error: updateError } = await supabase
-        .from("products_bought")
-        .update({
-            status: "returned",
-            returned_to: merchant?.id,
-            returned_at: new Date().toISOString(),
-            latitude,
-            longitude,
-            accuracy,
-        })
-        .eq("id", buyId)
-        .eq("status", "bought");
-
-    if (updateError) return { error: updateError.message };
-
-    return { data };
 }
 
 export async function addProductToCart(product: IProduct) {
@@ -287,6 +207,11 @@ export async function addProductToCart(product: IProduct) {
             p_status: "cart",
         });
 
+    await supabase.from("history").insert({
+        product_id: product.id,
+        created_by,
+    });
+
     return { data };
 }
 
@@ -329,4 +254,72 @@ export async function updateCartQuantity(cartId: string, quantity: number) {
     if (error) return { error: error.message };
 
     return { message: "Cart updated" };
+}
+
+export async function getRetailerByUpi({
+    pa,
+    pn,
+    lat,
+    lng,
+    acc,
+}: IGetRetailer) {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from("retailers")
+        .select("id")
+        .eq("upi", pa)
+        .single();
+
+    if (data) return { data };
+
+    const { data: retailer, error: retailerError } = await supabase
+        .from("retailers")
+        .insert({
+            upi: pa,
+            name: pn,
+            latitude: lat,
+            longitude: lng,
+            accuracy: acc,
+        })
+        .select("id")
+        .single();
+
+    if (retailerError) return { error: retailerError.message };
+
+    return { data: retailer };
+}
+
+export async function countCartItems() {
+    const supabase = createClient();
+
+    const created_by = await getSessionUserId();
+    if (!created_by) return 0;
+
+    const { data, error } = await supabase
+        .from("cart")
+        .select("quantity, id")
+        .eq("created_by", created_by)
+        .eq("status", "cart");
+
+    if (error) return 0;
+
+    return data.reduce((acc, item) => acc + item.quantity, 0);
+}
+
+export async function bulkCartStatusUpdate(status: string, newStatus: string) {
+    const supabase = createClient();
+
+    const created_by = await getSessionUserId();
+    if (!created_by) return { error: "User not found" };
+
+    const { error } = await supabase
+        .from("cart")
+        .update({ status: newStatus })
+        .eq("created_by", created_by)
+        .eq("status", status);
+
+    if (error) return { error: error.message };
+
+    return { message: "Cart updated. Redirecting..." };
 }

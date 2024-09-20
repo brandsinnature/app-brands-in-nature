@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Minus, Package, Plus } from "lucide-react";
 import { categorizeDate } from "@/lib/utils";
 import CartEditTrigger from "./cart-edit-trigger";
+import Link from "next/link";
 
 type Props = {
     open: boolean;
@@ -228,8 +229,12 @@ export default function CartTrigger({ open, setOpen }: Props) {
                         )}
                     </div>
                 </div>
-                <DialogFooter className="mt-auto w-full">
-                    <Button type="submit">Deposit {totalItems} packages</Button>
+                <DialogFooter className="mt-auto">
+                    <Link href="/deposit">
+                        <Button className="w-full">
+                            Deposit {totalItems} packages
+                        </Button>
+                    </Link>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

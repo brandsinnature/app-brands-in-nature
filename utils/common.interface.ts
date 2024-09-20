@@ -231,7 +231,9 @@ export interface ProductAttributes {
     disposal_methods: string | null;
 }
 
-export interface IJwtPayload extends JwtPayload {}
+export interface IJwtPayload extends JwtPayload {
+    email: string;
+}
 
 export interface IReturn {
     latitude: number;
@@ -251,4 +253,13 @@ export interface ICart {
         IProduct,
         "gtin" | "brand" | "name" | "images" | "description"
     >;
+}
+
+export interface IGetRetailer {
+    pa: string | null;
+    pn: string | null;
+    lat: number | null;
+    lng: number | null;
+    acc: number | null;
+    id?: string;
 }
