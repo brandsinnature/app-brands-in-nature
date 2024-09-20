@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -12,5 +13,5 @@ export function categorizeDate(date: Date) {
 
     if (date.toDateString() === today.toDateString()) return "Today";
     if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-    return date.toLocaleDateString();
+    return format(date, "PP");
 }

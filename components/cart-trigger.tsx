@@ -80,7 +80,7 @@ export default function CartTrigger({ open, setOpen }: Props) {
         );
     };
 
-    const groupedCartItems = cartItems.reduce((acc, item) => {
+    const groupedCartItems = cartItems.reduceRight((acc, item) => {
         const category = categorizeDate(new Date(item.created_at));
         if (!acc[category]) acc[category] = [];
         acc[category].push(item);
@@ -100,6 +100,9 @@ export default function CartTrigger({ open, setOpen }: Props) {
                     className="rounded-full w-12 h-12"
                     onClick={fetchCart}
                 >
+                    <span className="-top-2 -right-2 absolute bg-yellow-500 px-2 py-1 rounded-full font-bold text-xs text-yellow-900">
+                        {totalItems}
+                    </span>
                     <TbShoppingBag size={28} />
                 </Button>
             </DialogTrigger>
@@ -128,7 +131,7 @@ export default function CartTrigger({ open, setOpen }: Props) {
                         {Object.entries(groupedCartItems).map(
                             ([date, items]) => (
                                 <div key={date} className="space-y-2">
-                                    <p className="font-normal font-voska text-left text-muted-foreground">
+                                    <p className="pt-3 font-normal font-voska text-left text-muted-foreground">
                                         {date}
                                     </p>
                                     <div className="space-y-4 divide-y">

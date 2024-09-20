@@ -12,7 +12,6 @@ import { CgSpinnerAlt } from "react-icons/cg";
 import ProductDrawer from "../product-drawer";
 import { toast } from "sonner";
 import CartTrigger from "../cart-trigger";
-import { useRouter } from "next/navigation";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);

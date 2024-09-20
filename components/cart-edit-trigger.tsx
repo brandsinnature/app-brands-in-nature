@@ -60,7 +60,7 @@ export default function CartEditTrigger({
                     <div className="space-y-4 divide-y">
                         {Object.entries(groupedItems).map(([date, items]) => (
                             <div key={date} className="space-y-2">
-                                <p className="font-normal font-voska text-left text-muted-foreground">
+                                <p className="pt-3 font-normal font-voska text-left text-muted-foreground">
                                     {date}
                                 </p>
                                 <div className="space-y-4 divide-y">

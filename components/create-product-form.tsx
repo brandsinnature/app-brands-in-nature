@@ -24,9 +24,7 @@ import {
 import { createProduct } from "@/data-access/product";
 import { CompleteProduct } from "@/utils/common.interface";
 import { toast } from "sonner";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Title from "@/components/ui/title";
-import Container from "./ui/container";
+import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
     brand: z.string().min(1, "Brand is required"),
@@ -44,9 +42,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function CreateProductForm() {
-    const router = useRouter();
-    const params = useParams();
+type Props = {
+    code: string;
+    setOpen: (open: boolean) => void;
+};
+
+export default function CreateProductForm({ code, setOpen }: Props) {
     const search = useSearchParams();
 
     const form = useForm<FormValues>({
@@ -54,7 +55,7 @@ export default function CreateProductForm() {
         defaultValues: {
             brand: search.get("brand") ?? "",
             name: search.get("name") ?? "",
-            gtin: params["code"] as string,
+            gtin: code,
             category: search.get("category") ?? "",
             sub_category: search.get("sub_category") ?? "",
             description: search.get("description") ?? "",
@@ -75,210 +76,199 @@ export default function CreateProductForm() {
 
         form.reset();
         toast.success("Product created successfully");
-        router.push("/");
+        setOpen(false);
     }
 
     const isLoading = form.formState.isSubmitting;
 
     return (
-        <Container className="space-y-6">
-            <Title text="Create Product Form" />
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                    control={form.control}
+                    name="gtin"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>GTIN</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter GTIN"
+                                    {...field}
+                                    readOnly
+                                    disabled
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter product name"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="brand"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Brand</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter brand name"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value ?? undefined}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="electronics">
+                                        Electronics
+                                    </SelectItem>
+                                    <SelectItem value="clothing">
+                                        Clothing
+                                    </SelectItem>
+                                    <SelectItem value="food">Food</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="sub_category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Sub Category</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter sub category"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    placeholder="Enter product description"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="country_of_origin"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Country of Origin</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter country of origin"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="weights_and_measures.net_weight"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Net Weight</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter net weight"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="weights_and_measures.measurement_unit"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Measurement Unit</FormLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value ?? undefined}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a unit" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="kg">
+                                        Kilogram (kg)
+                                    </SelectItem>
+                                    <SelectItem value="g">Gram (g)</SelectItem>
+                                    <SelectItem value="lb">
+                                        Pound (lb)
+                                    </SelectItem>
+                                    <SelectItem value="oz">
+                                        Ounce (oz)
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button
+                    type="submit"
+                    className="w-full"
+                    loading={isLoading}
+                    disabled={isLoading}
                 >
-                    <FormField
-                        control={form.control}
-                        name="gtin"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>GTIN</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter GTIN"
-                                        {...field}
-                                        readOnly
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter product name"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="brand"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Brand</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter brand name"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value ?? undefined}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="electronics">
-                                            Electronics
-                                        </SelectItem>
-                                        <SelectItem value="clothing">
-                                            Clothing
-                                        </SelectItem>
-                                        <SelectItem value="food">
-                                            Food
-                                        </SelectItem>
-                                        <SelectItem value="other">
-                                            Other
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="sub_category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Sub Category</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter sub category"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Description</FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        placeholder="Enter product description"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="country_of_origin"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Country of Origin</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter country of origin"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="weights_and_measures.net_weight"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Net Weight</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Enter net weight"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="weights_and_measures.measurement_unit"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Measurement Unit</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value ?? undefined}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a unit" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="kg">
-                                            Kilogram (kg)
-                                        </SelectItem>
-                                        <SelectItem value="g">
-                                            Gram (g)
-                                        </SelectItem>
-                                        <SelectItem value="lb">
-                                            Pound (lb)
-                                        </SelectItem>
-                                        <SelectItem value="oz">
-                                            Ounce (oz)
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        loading={isLoading}
-                        disabled={isLoading}
-                    >
-                        Submit
-                    </Button>
-                </form>
-            </Form>
-        </Container>
+                    Submit
+                </Button>
+            </form>
+        </Form>
     );
 }
