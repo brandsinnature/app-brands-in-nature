@@ -207,7 +207,7 @@ export async function addProductToCart(product: IProduct) {
             p_status: "cart",
         });
 
-    await supabase.from("history").insert({
+    await supabase.from("cart_history").insert({
         product_id: product.id,
         created_by,
     });
@@ -226,7 +226,8 @@ export async function getAllCartItems() {
         .select(
             "id, product_id, quantity, created_at, product:products!product_id(id, gtin, brand, name, images, description)"
         )
-        .eq("created_by", created_by);
+        .eq("created_by", created_by)
+        .eq("status", "cart");
 
     if (error) return [];
 
