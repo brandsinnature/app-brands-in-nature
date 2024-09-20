@@ -4,6 +4,11 @@ import { getCurrentUser } from "@/data-access/auth";
 import { format } from "date-fns";
 import { Metadata } from "next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getHistory } from "@/data-access/product";
+import { categorizeDate } from "@/lib/utils";
+import { IHistory } from "@/utils/common.interface";
+import Show from "@/components/scandit/Show";
+import { PiScanLight } from "react-icons/pi";
 
 export const metadata: Metadata = {
     title: "Profile",
@@ -11,6 +16,18 @@ export const metadata: Metadata = {
 
 export default async function Profile() {
     const user = await getCurrentUser();
+
+    const history = await getHistory(user?.id);
+
+    const groupedHistoryItems = (history as unknown as IHistory[]).reduceRight(
+        (acc, item) => {
+            const category = categorizeDate(new Date(item.created_at));
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(item);
+            return acc;
+        },
+        {} as Record<string, IHistory[]>
+    );
 
     return (
         <Container className="p-0">
@@ -34,7 +51,41 @@ export default async function Profile() {
                     <TabsTrigger value="history">History</TabsTrigger>
                 </TabsList>
                 <TabsContent value="profile"></TabsContent>
-                <TabsContent value="history"></TabsContent>
+                <TabsContent value="history">
+                    <Show when={!Object.entries(groupedHistoryItems)?.length}>
+                        <PiScanLight className="mx-auto mt-20" size={64} />
+                        <p className="pt-3 font-normal font-voska text-center text-muted-foreground">
+                            Your scan history will appear here
+                        </p>
+                    </Show>
+
+                    <div className="space-y-4 divide-y">
+                        {Object.entries(groupedHistoryItems).map(
+                            ([date, items]) => (
+                                <div key={date} className="space-y-2">
+                                    <p className="pt-3 font-normal font-voska text-left text-muted-foreground">
+                                        {date}
+                                    </p>
+                                    <div className="space-y-4 divide-y">
+                                        {items.map(({ id, product }) => (
+                                            <div
+                                                key={id}
+                                                className="flex justify-between items-center gap-3 pt-4 first:pt-0"
+                                            >
+                                                <PiScanLight />
+                                                <div className="flex items-center gap-3">
+                                                    <p className="font-medium text-left text-sm">
+                                                        {product?.name || "--"}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </div>
+                </TabsContent>
             </Tabs>
         </Container>
     );

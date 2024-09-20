@@ -265,13 +265,13 @@ export async function getRetailerByUpi({
 }: IGetRetailer) {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from("retailers")
         .select("id")
         .eq("upi", pa)
         .single();
 
-    if (data) return { data };
+    if (data?.id) return { data };
 
     const { data: retailer, error: retailerError } = await supabase
         .from("retailers")
@@ -322,4 +322,21 @@ export async function bulkCartStatusUpdate(status: string, newStatus: string) {
     if (error) return { error: error.message };
 
     return { message: "Cart updated. Redirecting..." };
+}
+
+export async function getHistory(userId?: string) {
+    const supabase = createClient();
+
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+        .from("history")
+        .select(
+            "id, created_at, product_id, product:products!product_id(id, gtin, name)"
+        )
+        .eq("created_by", userId);
+
+    if (error) return [];
+
+    return data;
 }

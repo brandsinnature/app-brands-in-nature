@@ -263,3 +263,10 @@ export interface IGetRetailer {
     acc: number | null;
     id?: string;
 }
+
+export interface IHistory {
+    id: string;
+    product_id: string;
+    created_at: string;
+    product: Pick<IProduct, "id" | "name" | "gtin">;
+}
