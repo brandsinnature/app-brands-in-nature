@@ -30,7 +30,7 @@ export default async function Profile() {
     );
 
     return (
-        <Container className="p-0">
+        <Container className="p-0 pb-10">
             <div className="flex flex-col justify-center space-y-2 bg-gradient-to-r from-sky-500 to-indigo-500 px-10 h-60">
                 <Avatar className="bg-white/40 size-16">
                     <AvatarImage src="/default-user.png" alt="@shadcn" />
