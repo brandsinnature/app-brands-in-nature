@@ -59,7 +59,7 @@ export default async function Profile() {
                         </p>
                     </Show>
 
-                    <div className="space-y-4 divide-y">
+                    <div className="space-y-4 px-4 divide-y">
                         {Object.entries(groupedHistoryItems).map(
                             ([date, items]) => (
                                 <div key={date} className="space-y-2">
@@ -70,13 +70,31 @@ export default async function Profile() {
                                         {items.map(({ id, product }) => (
                                             <div
                                                 key={id}
-                                                className="flex justify-between items-center gap-3 pt-4 first:pt-0"
+                                                className="flex flex-col gap-1 pt-4 first:pt-0 w-full"
                                             >
-                                                <PiScanLight />
-                                                <div className="flex items-center gap-3">
-                                                    <p className="font-medium text-left text-sm">
-                                                        {product?.name || "--"}
-                                                    </p>
+                                                <div className="flex items-center gap-3 w-full">
+                                                    <PiScanLight size={24} />
+                                                    <div className="space-y-1 grow">
+                                                        <div className="flex justify-between items-center w-full">
+                                                            <p className="font-medium text-left text-sm">
+                                                                {product?.name ||
+                                                                    "--"}
+                                                            </p>
+                                                            <p className="font-semibold text-primary text-sm whitespace-nowrap">
+                                                                + 5 INR
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center w-full font-light text-muted-foreground text-xs">
+                                                            <p className="mr-2 truncate">
+                                                                {product?.description ||
+                                                                    "--"}
+                                                            </p>
+                                                            <p className="whitespace-nowrap">
+                                                                Scanned
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

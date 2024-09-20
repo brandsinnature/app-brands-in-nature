@@ -268,5 +268,5 @@ export interface IHistory {
     id: string;
     product_id: string;
     created_at: string;
-    product: Pick<IProduct, "id" | "name" | "gtin">;
+    product: Pick<IProduct, "id" | "name" | "gtin" | "description">;
 }

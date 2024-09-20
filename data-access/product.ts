@@ -331,9 +331,9 @@ export async function getHistory(userId?: string) {
     if (!userId) return [];
 
     const { data, error } = await supabase
-        .from("history")
+        .from("cart_history")
         .select(
-            "id, created_at, product_id, product:products!product_id(id, gtin, name)"
+            "id, created_at, product_id, product:products!product_id(id, gtin, name, description)"
         )
         .eq("created_by", userId);
 
