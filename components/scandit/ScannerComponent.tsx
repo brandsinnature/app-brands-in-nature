@@ -7,21 +7,28 @@ import type {
 
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
-import { addProductToCart, getProductByGtin } from "@/data-access/product";
+import {
+    addProductToCart,
+    getAllCartItems,
+    getProductByGtin,
+} from "@/data-access/product";
 import { CgSpinnerAlt } from "react-icons/cg";
 import ProductDrawer from "../product-drawer";
 import { toast } from "sonner";
 import CartTrigger from "../cart-trigger";
 import Show from "./Show";
+import { ICart } from "@/utils/common.interface";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
-    const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
+    const { barcode, setBarcode, keepCameraOn, loading, setLoading } =
+        useStore();
 
     const [open, setOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [product, setProduct] = useState(null);
+    const [cartItems, setCartItems] = useState<ICart[]>([]);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) {
@@ -38,22 +45,19 @@ export default function ScannerComponent() {
                 setLoading(true);
                 if (session.newlyRecognizedBarcodes.length > 0) {
                     const scannedJson = session.newlyRecognizedBarcodes[0];
-
                     await shouldKeepCameraOn();
-                    setBarcode(scannedJson);
 
                     const scannedCode = `${scannedJson.data}`;
 
                     // Check if scanned code is a number
                     if (isNaN(Number(scannedCode))) {
                         toast.error("Invalid barcode");
-                        await sdk.enableScanning(false);
+                        await sdk.enableScanning(true);
                         return setLoading(false);
                     }
 
-                    const { data } = await getProductByGtin(
-                        `${scannedJson.data}`
-                    );
+                    setBarcode(scannedJson);
+                    const { data } = await getProductByGtin(scannedCode);
 
                     setProduct(data);
                     setOpen(true);
@@ -107,6 +111,15 @@ export default function ScannerComponent() {
         openHandler();
     }, [cartOpen, sdk]);
 
+    async function fetchCart() {
+        const data = await getAllCartItems();
+        setCartItems(data as unknown as ICart[]);
+    }
+
+    useEffect(() => {
+        fetchCart();
+    }, [barcode?.data]);
+
     return (
         <>
             <div ref={host} className="w-full h-full">
@@ -120,7 +133,12 @@ export default function ScannerComponent() {
             <ProductDrawer open={open} setOpen={setOpen} product={product} />
 
             <div className="bottom-24 left-4 absolute">
-                <CartTrigger open={cartOpen} setOpen={setCartOpen} />
+                <CartTrigger
+                    open={cartOpen}
+                    setOpen={setCartOpen}
+                    cartItems={cartItems}
+                    setCartItems={setCartItems}
+                />
             </div>
         </>
     );

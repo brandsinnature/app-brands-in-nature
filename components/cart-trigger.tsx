@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import { TbShoppingBag } from "react-icons/tb";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
     getAllCartItems,
     removeProductFromCart,
@@ -25,24 +25,23 @@ import Link from "next/link";
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
+    cartItems: ICart[];
+    setCartItems: Dispatch<SetStateAction<ICart[]>>;
+    fetchCart: () => void;
 };
 
-export default function CartTrigger({ open, setOpen }: Props) {
-    const [cartItems, setCartItems] = useState<ICart[]>([]);
+export default function CartTrigger({
+    open,
+    setOpen,
+    cartItems,
+    setCartItems,
+    fetchCart,
+}: Props) {
     const [isMounted, setIsMounted] = useState(false);
 
     const costPerQuantity = parseInt(
         process.env.NEXT_PUBLIC_PER_QUANTITY_COST || "5"
     );
-
-    useEffect(() => {
-        fetchCart();
-    }, []);
-
-    async function fetchCart() {
-        const data = await getAllCartItems();
-        setCartItems(data as unknown as ICart[]);
-    }
 
     useEffect(() => {
         setIsMounted(true);
