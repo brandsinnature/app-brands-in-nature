@@ -121,7 +121,8 @@ export default function ScannerComponent() {
 
     useEffect(() => {
         fetchCart();
-    }, [barcode?.data, fetchCart]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [barcode?.data]);
 
     return (
         <>
