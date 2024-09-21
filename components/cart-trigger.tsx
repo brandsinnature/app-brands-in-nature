@@ -25,23 +25,28 @@ import Link from "next/link";
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
+    fetchCart: () => void;
     cartItems: ICart[];
     setCartItems: Dispatch<SetStateAction<ICart[]>>;
-    fetchCart: () => void;
 };
 
 export default function CartTrigger({
     open,
     setOpen,
+    fetchCart,
     cartItems,
     setCartItems,
-    fetchCart,
 }: Props) {
     const [isMounted, setIsMounted] = useState(false);
 
     const costPerQuantity = parseInt(
         process.env.NEXT_PUBLIC_PER_QUANTITY_COST || "5"
     );
+
+    useEffect(() => {
+        fetchCart();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         setIsMounted(true);

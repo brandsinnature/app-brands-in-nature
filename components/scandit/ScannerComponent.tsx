@@ -22,14 +22,12 @@ import { ICart } from "@/utils/common.interface";
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
-    const { barcode, setBarcode, keepCameraOn, loading, setLoading } =
-        useStore();
+    const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
 
     const [open, setOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [product, setProduct] = useState(null);
     const [cartItems, setCartItems] = useState<ICart[]>([]);
-    const [scancode, setScancode] = useState("");
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) {
@@ -60,7 +58,6 @@ export default function ScannerComponent() {
                     }
 
                     setBarcode(scannedJson);
-                    setScancode(scannedCode);
                     const { data } = await getProductByGtin(scannedCode);
 
                     setProduct(data);
@@ -103,6 +100,7 @@ export default function ScannerComponent() {
         }
 
         openHandler();
+        fetchCart();
     }, [open, sdk]);
 
     // useEffect to toogle scanning when cart drawer is opened/closed
@@ -115,15 +113,10 @@ export default function ScannerComponent() {
         openHandler();
     }, [cartOpen, sdk]);
 
-    const fetchCart = async () => {
+    async function fetchCart() {
         const data = await getAllCartItems();
         setCartItems(data as unknown as ICart[]);
-    };
-
-    useEffect(() => {
-        fetchCart();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scancode]);
+    }
 
     return (
         <>
@@ -141,9 +134,9 @@ export default function ScannerComponent() {
                 <CartTrigger
                     open={cartOpen}
                     setOpen={setCartOpen}
+                    fetchCart={fetchCart}
                     cartItems={cartItems}
                     setCartItems={setCartItems}
-                    fetchCart={fetchCart}
                 />
             </div>
         </>
