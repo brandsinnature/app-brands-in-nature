@@ -29,6 +29,7 @@ export default function ScannerComponent() {
     const [cartOpen, setCartOpen] = useState(false);
     const [product, setProduct] = useState(null);
     const [cartItems, setCartItems] = useState<ICart[]>([]);
+    const [scancode, setScancode] = useState("");
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) {
@@ -59,6 +60,7 @@ export default function ScannerComponent() {
                     }
 
                     setBarcode(scannedJson);
+                    setScancode(scannedCode);
                     const { data } = await getProductByGtin(scannedCode);
 
                     setProduct(data);
@@ -113,16 +115,15 @@ export default function ScannerComponent() {
         openHandler();
     }, [cartOpen, sdk]);
 
-    const fetchCart = useCallback(async () => {
+    const fetchCart = async () => {
         const data = await getAllCartItems();
         setCartItems(data as unknown as ICart[]);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [barcode?.data]);
+    };
 
     useEffect(() => {
         fetchCart();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [barcode?.data]);
+    }, [scancode]);
 
     return (
         <>
