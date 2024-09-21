@@ -4,7 +4,7 @@ import Show from "@/components/scandit/Show";
 import DepositComponent from "@/components/scandit/DepositComponent";
 
 export default function DepositProvider() {
-    const { loaded, loading, sdk } = useSDK();
+    const { loaded, loading } = useSDK();
 
     return (
         <div className="flex flex-col justify-center items-center w-screen h-body">

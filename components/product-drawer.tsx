@@ -43,11 +43,7 @@ export default function ProductDrawer({ open, product, setOpen }: Props) {
                         <ProductCardView product={product!} />
                     </Show>
                     <Show when={!product?.gtin}>
-                        <NoProductFoundView
-                            code={code}
-                            openScannedDialog={open}
-                            setOpenScannedDialog={setOpen}
-                        />
+                        <NoProductFoundView code={code} />
                     </Show>
                 </div>
             </DrawerContent>
@@ -113,15 +109,7 @@ const ProductCardView = ({ product }: { product: CompleteProduct }) => {
     );
 };
 
-const NoProductFoundView = ({
-    code,
-    openScannedDialog,
-    setOpenScannedDialog,
-}: {
-    code?: string;
-    openScannedDialog: boolean;
-    setOpenScannedDialog: (open: boolean) => void;
-}) => {
+const NoProductFoundView = ({ code }: { code?: string }) => {
     const [productDialog, setProductDialog] = useState(false);
 
     return (

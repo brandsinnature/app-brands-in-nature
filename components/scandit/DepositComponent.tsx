@@ -71,7 +71,8 @@ export default function DepositComponent() {
 
                     if (error || !data) {
                         await sdk.enableScanning(true);
-                        return toast.error(error ?? "Error fetching Retailer");
+                        setLoading(false);
+                        return toast.error(error ?? "Error fetching retailer");
                     }
 
                     setRetailer({ pa, pn, lat, lng, acc, id: data.id });
@@ -110,15 +111,6 @@ export default function DepositComponent() {
 
         openHandler();
     }, [open, sdk]);
-
-    // useEffect(() => {
-    //     async function openHandler() {
-    //         if (cartOpen) await sdk.enableScanning(false);
-    //         else await sdk.enableScanning(true);
-    //     }
-
-    //     openHandler();
-    // }, [cartOpen, sdk]);
 
     return (
         <>

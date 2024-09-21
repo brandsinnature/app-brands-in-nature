@@ -266,6 +266,10 @@ export async function getRetailerByUpi({
 }: IGetRetailer) {
     const supabase = createClient();
 
+    if (!pa) return { error: "Invalid UPI" };
+    if (!pn) return { error: "Invalid Name" };
+    if (!lat || !lng || !acc) return { error: "Invalid location" };
+
     const { data } = await supabase
         .from("retailers")
         .select("id")

@@ -12,6 +12,7 @@ import { CgSpinnerAlt } from "react-icons/cg";
 import ProductDrawer from "../product-drawer";
 import { toast } from "sonner";
 import CartTrigger from "../cart-trigger";
+import Show from "./Show";
 
 export default function ScannerComponent() {
     const host = useRef<HTMLDivElement | null>(null);
@@ -38,9 +39,17 @@ export default function ScannerComponent() {
                 if (session.newlyRecognizedBarcodes.length > 0) {
                     const scannedJson = session.newlyRecognizedBarcodes[0];
 
-                    await sdk.enableScanning(false);
                     await shouldKeepCameraOn();
                     setBarcode(scannedJson);
+
+                    const scannedCode = `${scannedJson.data}`;
+
+                    // Check if scanned code is a number
+                    if (isNaN(Number(scannedCode))) {
+                        toast.error("Invalid barcode");
+                        await sdk.enableScanning(false);
+                        return setLoading(false);
+                    }
 
                     const { data } = await getProductByGtin(
                         `${scannedJson.data}`
@@ -58,6 +67,7 @@ export default function ScannerComponent() {
         [setLoading, sdk, shouldKeepCameraOn, setBarcode]
     );
 
+    // useEffect to attach the scanner to the host element
     useEffect(() => {
         async function onMount(): Promise<void> {
             if (loaded && host.current) {
@@ -78,6 +88,7 @@ export default function ScannerComponent() {
         };
     }, [loaded, sdk, onScan]);
 
+    // useEffect to toogle scanning when product drawer is opened/closed
     useEffect(() => {
         async function openHandler() {
             if (!open) await sdk.enableScanning(true);
@@ -86,6 +97,7 @@ export default function ScannerComponent() {
         openHandler();
     }, [open, sdk]);
 
+    // useEffect to toogle scanning when cart drawer is opened/closed
     useEffect(() => {
         async function openHandler() {
             if (cartOpen) await sdk.enableScanning(false);
@@ -98,11 +110,11 @@ export default function ScannerComponent() {
     return (
         <>
             <div ref={host} className="w-full h-full">
-                {loading && (
+                <Show when={loading}>
                     <div className="top-1/2 left-1/2 z-50 absolute -translate-x-1/2 -translate-y-1/2">
                         <CgSpinnerAlt className="mr-2 animate-spin" size={64} />
                     </div>
-                )}
+                </Show>
             </div>
 
             <ProductDrawer open={open} setOpen={setOpen} product={product} />
