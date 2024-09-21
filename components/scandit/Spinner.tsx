@@ -5,9 +5,9 @@ export interface SpinnerProps {
 }
 
 export default function Spinner({ color }: SpinnerProps) {
-    const { theme } = useTheme();
+    const { resolvedTheme } = useTheme();
 
-    if (theme === "dark") color = "white";
+    if (resolvedTheme === "dark") color = "white";
     else color = "black";
 
     if (!color) color = "white";

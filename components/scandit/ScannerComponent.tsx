@@ -45,7 +45,9 @@ export default function ScannerComponent() {
                 setLoading(true);
                 if (session.newlyRecognizedBarcodes.length > 0) {
                     const scannedJson = session.newlyRecognizedBarcodes[0];
+
                     await shouldKeepCameraOn();
+                    await sdk.enableScanning(false);
 
                     const scannedCode = `${scannedJson.data}`;
 
@@ -111,14 +113,15 @@ export default function ScannerComponent() {
         openHandler();
     }, [cartOpen, sdk]);
 
-    async function fetchCart() {
+    const fetchCart = useCallback(async () => {
         const data = await getAllCartItems();
         setCartItems(data as unknown as ICart[]);
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [barcode?.data]);
 
     useEffect(() => {
         fetchCart();
-    }, [barcode?.data]);
+    }, [barcode?.data, fetchCart]);
 
     return (
         <>
@@ -138,6 +141,7 @@ export default function ScannerComponent() {
                     setOpen={setCartOpen}
                     cartItems={cartItems}
                     setCartItems={setCartItems}
+                    fetchCart={fetchCart}
                 />
             </div>
         </>

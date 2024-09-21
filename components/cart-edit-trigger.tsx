@@ -87,7 +87,7 @@ export default function CartEditTrigger({
                                                     </AvatarFallback>
                                                 </Avatar>
 
-                                                <div className="space-y-1">
+                                                <div className="space-y-1 text-left">
                                                     <p className="font-medium text-left text-sm">
                                                         {product?.name || "--"}
                                                     </p>

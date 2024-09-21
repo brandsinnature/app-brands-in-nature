@@ -9,7 +9,6 @@ import { categorizeDate } from "@/lib/utils";
 import { IHistory } from "@/utils/common.interface";
 import Show from "@/components/scandit/Show";
 import { PiScanLight } from "react-icons/pi";
-
 export const metadata: Metadata = {
     title: "Profile",
 };
@@ -31,7 +30,7 @@ export default async function Profile() {
 
     return (
         <Container className="p-0 pb-10">
-            <div className="flex flex-col justify-center space-y-2 bg-gradient-to-r from-sky-500 to-indigo-500 px-10 h-60">
+            <div className="relative flex flex-col justify-center space-y-2 bg-gradient-to-r from-sky-500 to-indigo-500 px-10 h-60">
                 <Avatar className="bg-white/40 size-16">
                     <AvatarImage src="/default-user.png" alt="@shadcn" />
                     <AvatarFallback>BIN</AvatarFallback>
@@ -70,12 +69,15 @@ export default async function Profile() {
                                         {items.map(({ id, product }) => (
                                             <div
                                                 key={id}
-                                                className="flex flex-col gap-1 pt-4 first:pt-0 w-full"
+                                                className="flex flex-col gap-1 pt-4 first:pt-0"
                                             >
-                                                <div className="flex items-center gap-3 w-full">
-                                                    <PiScanLight size={24} />
+                                                <div className="flex items-center gap-3">
+                                                    <PiScanLight
+                                                        size={24}
+                                                        className="shrink-0"
+                                                    />
                                                     <div className="space-y-1 grow">
-                                                        <div className="flex justify-between items-center w-full">
+                                                        <div className="flex justify-between items-center">
                                                             <p className="font-medium text-left text-sm">
                                                                 {product?.name ||
                                                                     "--"}
@@ -85,8 +87,8 @@ export default async function Profile() {
                                                             </p>
                                                         </div>
 
-                                                        <div className="flex justify-between items-center w-full font-light text-muted-foreground text-xs">
-                                                            <p className="mr-2 truncate">
+                                                        <div className="flex justify-between items-center font-light text-muted-foreground text-xs">
+                                                            <p className="mr-2 max-w-56 truncate">
                                                                 {product?.description ||
                                                                     "--"}
                                                             </p>

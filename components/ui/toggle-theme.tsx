@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,10 @@ import { CgSpinner } from "react-icons/cg";
 import { useState } from "react";
 import { logout } from "@/data-access/auth";
 import { toast } from "sonner";
+import Show from "../scandit/Show";
+import { cn } from "@/lib/utils";
 
-export function ThemeToggle() {
+export function ThemeToggle({ themeIcon = true }: { themeIcon?: boolean }) {
     const { theme, setTheme } = useTheme();
     const [loading, setLoading] = useState(false);
 
@@ -38,8 +40,13 @@ export function ThemeToggle() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
-                    <Sun className="w-[1.2rem] h-[1.2rem] transition-all rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute w-[1.2rem] h-[1.2rem] transition-all rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
+                    <Show when={themeIcon}>
+                        <Sun className="w-[1.2rem] h-[1.2rem] transition-all rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
+                        <Moon className="absolute w-[1.2rem] h-[1.2rem] transition-all rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
+                    </Show>
+                    <Show when={!themeIcon}>
+                        <Settings className="w-[1.2rem] h-[1.2rem]" />
+                    </Show>
                     <span className="sr-only">Toggle theme</span>
                 </Button>
             </DropdownMenuTrigger>
