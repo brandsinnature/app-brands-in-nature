@@ -345,3 +345,93 @@ export async function getHistory(userId?: string) {
 
     return data;
 }
+
+export async function getScanItemsData() {
+    const supabase = createClient();
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0); // Set to start of day
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Set to end of day
+
+    const { data, error } = await supabase
+        .from("cart_history")
+        .select("created_at")
+        .gte("created_at", sevenDaysAgo.toISOString())
+        .order("created_at");
+
+    if (error) return [];
+
+    const allDates: { [key: string]: number } = {};
+    for (
+        let d = new Date(sevenDaysAgo);
+        d <= today;
+        d.setDate(d.getDate() + 1)
+    ) {
+        allDates[d.toISOString().split("T")[0]] = 0;
+    }
+
+    data.forEach((item) => {
+        const date = item.created_at.split("T")[0];
+        allDates[date] = (allDates[date] || 0) + 1;
+    });
+
+    const result = Object.entries(allDates).map(([date, scanned]) => ({
+        date,
+        scanned,
+    }));
+
+    return result;
+}
+
+export async function getRecyclingRate() {
+    const supabase = createClient();
+
+    const currentYear = new Date().getFullYear();
+    const startOfYear = new Date(currentYear, 0, 1).toISOString();
+    const endOfYear = new Date(
+        currentYear,
+        11,
+        31,
+        23,
+        59,
+        59,
+        999
+    ).toISOString();
+
+    const { data, error } = await supabase
+        .from("cart")
+        .select("status, quantity")
+        .gte("created_at", startOfYear)
+        .lte("created_at", endOfYear)
+        .in("status", ["bought", "returned"]);
+
+    if (error)
+        return {
+            year: currentYear,
+            boughtCount: 0,
+            returnedCount: 0,
+            recyclingRate: 0,
+        };
+
+    let boughtCount = 0;
+    let returnedCount = 0;
+
+    data.forEach((item) => {
+        if (item.status === "bought") return (boughtCount += item.quantity);
+
+        returnedCount += item.quantity;
+    });
+
+    const recyclingRate =
+        boughtCount > 0 ? (returnedCount / boughtCount) * 100 : 0;
+
+    return {
+        year: currentYear,
+        boughtCount,
+        returnedCount,
+        recyclingRate: parseFloat(recyclingRate.toFixed(2)),
+    };
+}
