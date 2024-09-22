@@ -62,7 +62,7 @@ export function DashboardRcc({ scanData, recyclingData }: Props) {
                 <CardHeader className="space-y-0 pb-2">
                     <CardDescription>Today</CardDescription>
                     <CardTitle className="text-4xl tabular-nums">
-                        {scanData[0]?.scanned}{" "}
+                        {scanData[scanData.length - 1]?.scanned}{" "}
                         <span className="font-normal font-sans text-muted-foreground text-sm tracking-normal">
                             scanned
                         </span>

@@ -362,8 +362,6 @@ export async function getScanItemsData() {
         .gte("created_at", sevenDaysAgo.toISOString())
         .order("created_at");
 
-    if (error) return [];
-
     const allDates: { [key: string]: number } = {};
     for (
         let d = new Date(sevenDaysAgo);
@@ -372,6 +370,9 @@ export async function getScanItemsData() {
     ) {
         allDates[d.toISOString().split("T")[0]] = 0;
     }
+
+    if (error)
+        return Object.entries(allDates).map((date) => ({ date, scanned: 0 }));
 
     data.forEach((item) => {
         const date = item.created_at.split("T")[0];
