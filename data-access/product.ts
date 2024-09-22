@@ -372,7 +372,10 @@ export async function getScanItemsData() {
     }
 
     if (error)
-        return Object.entries(allDates).map((date) => ({ date, scanned: 0 }));
+        return Object.entries(allDates).map(([date]) => ({
+            date,
+            scanned: 0,
+        }));
 
     data.forEach((item) => {
         const date = item.created_at.split("T")[0];
