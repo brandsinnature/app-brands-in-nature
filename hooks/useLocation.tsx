@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import { useQueryStates } from "next-usequerystate";
 import { parseAsFloat } from "next-usequerystate";
@@ -28,7 +30,16 @@ export const useLocation = () => {
                 setIsLoading(false);
             },
             (error) => {
-                toast.error(`Error: ${error.message}`);
+                toast.error(
+                    `Error: ${error.message}. Please refresh the page and enable location services.`,
+                    {
+                        duration: 8000,
+                        action: {
+                            label: "Refresh",
+                            onClick: () => window.location.reload(),
+                        },
+                    }
+                );
                 setIsLoading(false);
             }
         );

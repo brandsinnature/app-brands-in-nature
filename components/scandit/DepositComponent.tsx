@@ -36,9 +36,7 @@ export default function DepositComponent() {
     }, []);
 
     const shouldKeepCameraOn = useCallback(async () => {
-        if (!keepCameraOn) {
-            await sdk.enableCamera(false);
-        }
+        if (!keepCameraOn) await sdk.enableCamera(false);
     }, [sdk, keepCameraOn]);
 
     const onScan = useMemo<BarcodeCaptureListener>(

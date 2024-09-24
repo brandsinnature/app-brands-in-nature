@@ -18,6 +18,7 @@ import {
     LaserlineViewfinder,
     TorchSwitchControl,
 } from "scandit-web-datacapture-core";
+import { toast } from "sonner";
 
 export interface SDK {
     initialize: () => Promise<void>;
@@ -127,11 +128,13 @@ export function createSDKFacade(): SDK {
             await context.setFrameSource(camera);
         },
         async cleanup() {
+            if (barcodeCapture) {
+                await barcodeCapture.setEnabled(false);
+                await context?.removeMode(barcodeCapture);
+            }
             await context?.frameSource?.switchToDesiredState(
                 FrameSourceState.Off
             );
-            await context?.dispose();
-            await context?.removeAllModes();
             if (overlay) {
                 await overlay.setViewfinder(null);
                 await view?.removeOverlay(overlay);
@@ -145,6 +148,7 @@ export function createSDKFacade(): SDK {
                 torchSwitchControl = undefined;
             }
             view?.detachFromElement();
+            await context?.dispose();
             laserLineViewFinder = undefined;
             barcodeCapture = undefined;
             context = undefined;
@@ -219,9 +223,24 @@ export default function SDKProvider({
             await sdk.initialize();
             setLoading(false);
             setLoaded(true);
+
             // enable the camera on mount to speed up the access
-            await sdk.enableCamera(true);
+            try {
+                await sdk.enableCamera(true);
+            } catch (error) {
+                toast.error(
+                    `${error}. Please refresh the page and try again.`,
+                    {
+                        duration: 8000,
+                        action: {
+                            label: "Refresh",
+                            onClick: () => window.location.reload(),
+                        },
+                    }
+                );
+            }
         }
+
         void start();
 
         return () => {
