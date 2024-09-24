@@ -98,6 +98,8 @@ export default function DepositComponent() {
             if (loaded) {
                 sdk.removeBarcodeCaptureListener(onScan);
                 sdk.detachFromElement();
+                void sdk.enableScanning(false);
+                void sdk.enableCamera(false);
             }
         };
     }, [loaded, sdk, onScan]);

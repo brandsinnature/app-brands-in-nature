@@ -1,3 +1,4 @@
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { BarcodeCaptureListener } from "scandit-web-datacapture-barcode";
@@ -211,6 +212,7 @@ export default function SDKProvider({
     const [loaded, setLoaded] = useState(false);
     const [loading, setLoading] = useState(false);
     const sdk = useMemo(() => createSDKFacade(), []);
+    const pathname = usePathname();
 
     const providerValue = useMemo(
         () => ({ loading, loaded, sdk }),
@@ -246,7 +248,7 @@ export default function SDKProvider({
         return () => {
             void sdk.cleanup();
         };
-    }, [sdk]);
+    }, [sdk, pathname]);
 
     return (
         <SDKContext.Provider value={providerValue}>

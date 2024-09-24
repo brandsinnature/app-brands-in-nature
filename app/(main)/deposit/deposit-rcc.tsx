@@ -1,15 +1,12 @@
 "use client";
 
 import DepositProvider from "@/components/scandit/DepositProvider";
-import SDKProvider from "@/components/scandit/sdk";
-import { StoreProvider } from "@/components/scandit/store";
+import { ScanditWrapper } from "@/components/scandit/ScanditWrapper";
 
 export default function DepositPage() {
     return (
-        <SDKProvider>
-            <StoreProvider>
-                <DepositProvider />
-            </StoreProvider>
-        </SDKProvider>
+        <ScanditWrapper>
+            <DepositProvider />
+        </ScanditWrapper>
     );
 }

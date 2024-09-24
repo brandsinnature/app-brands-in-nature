@@ -53,27 +53,28 @@ export function StoreProvider({ children }: StoreProviderProps): JSX.Element {
         }
     }, [loaded, sdk]);
 
+    const value = useMemo(
+        () => ({
+            barcode,
+            setBarcode,
+            keepCameraOn,
+            setKeepCameraOn,
+            symbologies,
+            setSymbologies,
+            loading,
+            setLoading,
+        }),
+        [barcode, keepCameraOn, loading, symbologies]
+    );
+
     return (
-        <StoreContext.Provider
-            value={useMemo(
-                () => ({
-                    barcode,
-                    setBarcode,
-                    keepCameraOn,
-                    setKeepCameraOn,
-                    symbologies,
-                    setSymbologies,
-                    loading,
-                    setLoading,
-                }),
-                [barcode, keepCameraOn, loading, symbologies]
-            )}
-        >
-            {children}
-        </StoreContext.Provider>
+        <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
     );
 }
 
 export function useStore(): Store {
-    return useContext(StoreContext);
+    const context = useContext(StoreContext);
+    if (context === null)
+        throw new Error("useStore must be used within a StoreProvider");
+    return context;
 }
