@@ -8,7 +8,6 @@ import {
     IReturn,
 } from "@/utils/common.interface";
 import { createClient } from "@/utils/supabase/server";
-import { SupabaseClient } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
 import { getSessionUserId } from "./auth";
 
@@ -438,4 +437,19 @@ export async function getRecyclingRate() {
         returnedCount,
         recyclingRate: parseFloat(recyclingRate.toFixed(2)),
     };
+}
+
+export async function getBoughtPackages() {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from("cart")
+        .select(
+            "id, product_id, quantity, created_at, product:products!product_id(id, gtin, brand, name, images, description)"
+        )
+        .eq("status", "bought");
+
+    if (error) return [];
+
+    return data;
 }

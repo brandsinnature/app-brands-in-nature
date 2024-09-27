@@ -11,7 +11,6 @@ import { Button } from "./ui/button";
 import { TbShoppingBag } from "react-icons/tb";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
-    getAllCartItems,
     removeProductFromCart,
     updateCartQuantity,
 } from "@/data-access/product";

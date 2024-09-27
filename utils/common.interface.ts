@@ -255,6 +255,10 @@ export interface ICart {
     >;
 }
 
+export interface ICartCheck extends ICart {
+    checked: boolean;
+}
+
 export interface IGetRetailer {
     pa: string | null;
     pn: string | null;
@@ -269,4 +273,10 @@ export interface IHistory {
     product_id: string;
     created_at: string;
     product: Pick<IProduct, "id" | "name" | "gtin" | "description">;
+}
+
+export interface IRecycleContext {
+    selectedItems: ICart[];
+    scannedItems: ICart[];
+    setScannedItems: (items: ICart[]) => void;
 }

@@ -7,7 +7,6 @@ import type {
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
 import { CgSpinnerAlt } from "react-icons/cg";
-import Show from "./Show";
 import { useLocation } from "@/hooks/useLocation";
 import { countCartItems, getRetailerByUpi } from "@/data-access/product";
 import { toast } from "sonner";
@@ -15,9 +14,8 @@ import { IGetRetailer } from "@/utils/common.interface";
 import RetailerDrawer from "../drawers/retailer-drawer";
 
 export default function DepositComponent() {
-    const host = useRef<HTMLDivElement | null>(null);
-    const { loaded, sdk } = useSDK();
-    const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
+    const { sdk } = useSDK();
+    const { setBarcode, keepCameraOn, setLoading } = useStore();
     const { lat, lng, acc, getCurrentLocation } = useLocation();
 
     const [open, setOpen] = useState(false);
@@ -83,26 +81,11 @@ export default function DepositComponent() {
     );
 
     useEffect(() => {
-        async function onMount(): Promise<void> {
-            if (loaded && host.current) {
-                sdk.connectToElement(host.current);
-                await sdk.enableCamera(true);
-                await sdk.enableScanning(true);
-
-                sdk.addBarcodeCaptureListener(onScan);
-            }
-        }
-
-        void onMount();
+        sdk.addBarcodeCaptureListener(onScan);
         return () => {
-            if (loaded) {
-                sdk.removeBarcodeCaptureListener(onScan);
-                sdk.detachFromElement();
-                void sdk.enableScanning(false);
-                void sdk.enableCamera(false);
-            }
+            sdk.removeBarcodeCaptureListener(onScan);
         };
-    }, [loaded, sdk, onScan]);
+    }, [sdk, onScan]);
 
     useEffect(() => {
         async function openHandler() {
@@ -113,21 +96,11 @@ export default function DepositComponent() {
     }, [open, sdk]);
 
     return (
-        <>
-            <div ref={host} className="w-full h-full">
-                <Show when={loading}>
-                    <div className="top-1/2 left-1/2 z-50 absolute -translate-x-1/2 -translate-y-1/2">
-                        <CgSpinnerAlt className="mr-2 animate-spin" size={64} />
-                    </div>
-                </Show>
-            </div>
-
-            <RetailerDrawer
-                open={open}
-                setOpen={setOpen}
-                retailer={retailer}
-                count={count}
-            />
-        </>
+        <RetailerDrawer
+            open={open}
+            setOpen={setOpen}
+            retailer={retailer}
+            count={count}
+        />
     );
 }

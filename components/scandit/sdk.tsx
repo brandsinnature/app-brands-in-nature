@@ -1,4 +1,3 @@
-import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { BarcodeCaptureListener } from "scandit-web-datacapture-barcode";
@@ -131,7 +130,7 @@ export function createSDKFacade(): SDK {
         async cleanup() {
             if (barcodeCapture) {
                 await barcodeCapture.setEnabled(false);
-                await context?.removeMode(barcodeCapture);
+                barcodeCapture = undefined;
             }
             await context?.frameSource?.switchToDesiredState(
                 FrameSourceState.Off
@@ -139,6 +138,7 @@ export function createSDKFacade(): SDK {
             if (overlay) {
                 await overlay.setViewfinder(null);
                 await view?.removeOverlay(overlay);
+                overlay = undefined;
             }
             if (cameraSwitchControl) {
                 view?.removeControl(cameraSwitchControl);
@@ -148,16 +148,25 @@ export function createSDKFacade(): SDK {
                 view?.removeControl(torchSwitchControl);
                 torchSwitchControl = undefined;
             }
-            view?.detachFromElement();
-            await context?.dispose();
+            if (view) {
+                view.detachFromElement();
+                view = undefined;
+            }
+            if (context) {
+                console.log("Cleaning up context ....");
+
+                await context.removeAllModes();
+                await context.dispose();
+                context = undefined;
+            }
             laserLineViewFinder = undefined;
             barcodeCapture = undefined;
-            context = undefined;
-            view = undefined;
             settings = undefined;
             camera = undefined;
-            host?.remove();
-            host = undefined;
+            if (host) {
+                host.remove();
+                host = undefined;
+            }
         },
         connectToElement(element: HTMLElement) {
             host = createHostElementIfNeeded();
@@ -211,8 +220,8 @@ export default function SDKProvider({
 }: SDKProviderProps): JSX.Element {
     const [loaded, setLoaded] = useState(false);
     const [loading, setLoading] = useState(false);
+
     const sdk = useMemo(() => createSDKFacade(), []);
-    const pathname = usePathname();
 
     const providerValue = useMemo(
         () => ({ loading, loaded, sdk }),
@@ -246,9 +255,11 @@ export default function SDKProvider({
         void start();
 
         return () => {
+            void sdk.enableScanning(false);
+            void sdk.enableCamera(false);
             void sdk.cleanup();
         };
-    }, [sdk, pathname]);
+    }, [sdk]);
 
     return (
         <SDKContext.Provider value={providerValue}>
@@ -259,6 +270,7 @@ export default function SDKProvider({
 
 export function useSDK(): SDKWithLoadingStatus {
     const value = useContext(SDKContext);
+
     if (value.sdk === null) {
         throw new Error(
             "Sdk facade is null. Did you forget to wrap the component with SDKProvider?"

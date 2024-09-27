@@ -1,12 +1,40 @@
+import PackageCard from "@/components/recycle/package-card";
 import Container from "@/components/ui/container";
-import { DialogTitle } from "@/components/ui/dialog";
+import { getBoughtPackages } from "@/data-access/product";
+import { categorizeDate } from "@/lib/utils";
+import { ICart, ICartCheck } from "@/utils/common.interface";
+import { Metadata } from "next";
 
-export default function Recycle() {
+export const metadata: Metadata = {
+    title: "Recycle",
+};
+
+export default async function Recycle() {
+    const packages = await getBoughtPackages();
+
+    const groupedCartItems = packages.reduce((acc, item) => {
+        const category = categorizeDate(new Date(item.created_at));
+        if (!acc[category]) acc[category] = [];
+
+        acc[category].push({
+            ...(item as unknown as ICart),
+            checked: false,
+        });
+        return acc;
+    }, {} as Record<string, ICartCheck[]>);
+
     return (
         <Container className="space-y-6">
-            <p className="font-normal font-voska text-2xl text-left tracking-[0.0125em]">
-                Recycle packages
-            </p>
+            <div className="space-y-1">
+                <p className="font-normal font-voska text-2xl text-left tracking-[0.0125em]">
+                    Recycle packages
+                </p>
+                <p className="text-muted-foreground text-sm">
+                    Scan barcode to start recycling
+                </p>
+            </div>
+
+            <PackageCard items={groupedCartItems} />
         </Container>
     );
 }

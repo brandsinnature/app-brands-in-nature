@@ -1,38 +1,31 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type {
-    BarcodeCapture,
-    BarcodeCaptureListener,
-    BarcodeCaptureSession,
-} from "scandit-web-datacapture-barcode";
-
-import { useSDK } from "./sdk";
-import { useStore } from "./store";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import CartTrigger from "../cart-trigger";
+import ProductDrawer from "../product-drawer";
+import { ICart } from "@/utils/common.interface";
 import {
     addProductToCart,
     getAllCartItems,
     getProductByGtin,
 } from "@/data-access/product";
-import { CgSpinnerAlt } from "react-icons/cg";
-import ProductDrawer from "../product-drawer";
+import { useSDK } from "./sdk";
+import { useStore } from "./store";
 import { toast } from "sonner";
-import CartTrigger from "../cart-trigger";
-import Show from "./Show";
-import { ICart } from "@/utils/common.interface";
+import {
+    BarcodeCapture,
+    BarcodeCaptureListener,
+    BarcodeCaptureSession,
+} from "scandit-web-datacapture-barcode";
 
 export default function ScannerComponent() {
-    const host = useRef<HTMLDivElement | null>(null);
-    const { loaded, sdk } = useSDK();
-    const { setBarcode, keepCameraOn, loading, setLoading } = useStore();
-
+    const { sdk } = useSDK();
+    const { setBarcode, keepCameraOn, setLoading } = useStore();
     const [open, setOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [product, setProduct] = useState(null);
     const [cartItems, setCartItems] = useState<ICart[]>([]);
 
     const shouldKeepCameraOn = useCallback(async () => {
-        if (!keepCameraOn) {
-            await sdk.enableCamera(false);
-        }
+        if (!keepCameraOn) await sdk.enableCamera(false);
     }, [sdk, keepCameraOn]);
 
     const onScan = useMemo<BarcodeCaptureListener>(
@@ -72,28 +65,14 @@ export default function ScannerComponent() {
         [setLoading, sdk, shouldKeepCameraOn, setBarcode]
     );
 
-    // useEffect to attach the scanner to the host element
     useEffect(() => {
-        async function onMount(): Promise<void> {
-            if (loaded && host.current) {
-                sdk.connectToElement(host.current);
-                await sdk.enableCamera(true);
-                await sdk.enableScanning(true);
-
-                sdk.addBarcodeCaptureListener(onScan);
-            }
-        }
-
-        void onMount();
+        sdk.addBarcodeCaptureListener(onScan);
         return () => {
-            if (loaded) {
-                sdk.removeBarcodeCaptureListener(onScan);
-                sdk.detachFromElement();
-            }
+            sdk.removeBarcodeCaptureListener(onScan);
         };
-    }, [loaded, sdk, onScan]);
+    }, [sdk, onScan]);
 
-    // useEffect to toogle scanning when product drawer is opened/closed
+    // useEffect to toggle scanning when product drawer is opened/closed
     useEffect(() => {
         async function openHandler() {
             if (!open) await sdk.enableScanning(true);
@@ -103,7 +82,7 @@ export default function ScannerComponent() {
         fetchCart();
     }, [open, sdk]);
 
-    // useEffect to toogle scanning when cart drawer is opened/closed
+    // useEffect to toggle scanning when cart drawer is opened/closed
     useEffect(() => {
         async function openHandler() {
             if (cartOpen) await sdk.enableScanning(false);
@@ -120,14 +99,6 @@ export default function ScannerComponent() {
 
     return (
         <>
-            <div ref={host} className="w-full h-full">
-                <Show when={loading}>
-                    <div className="top-1/2 left-1/2 z-50 absolute -translate-x-1/2 -translate-y-1/2">
-                        <CgSpinnerAlt className="mr-2 animate-spin" size={64} />
-                    </div>
-                </Show>
-            </div>
-
             <ProductDrawer open={open} setOpen={setOpen} product={product} />
 
             <div className="bottom-24 left-4 absolute">
