@@ -34,7 +34,10 @@ export default async function Recycle() {
                 </p>
             </div>
 
-            <PackageCard items={groupedCartItems} />
+            <PackageCard
+                items={groupedCartItems}
+                packages={packages as unknown as ICart[]}
+            />
         </Container>
     );
 }

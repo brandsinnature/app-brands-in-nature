@@ -279,4 +279,5 @@ export interface IRecycleContext {
     selectedItems: ICart[];
     scannedItems: ICart[];
     setScannedItems: (items: ICart[]) => void;
+    cartItems: ICart[];
 }

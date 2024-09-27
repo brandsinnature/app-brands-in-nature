@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ICartCheck } from "@/utils/common.interface";
+import { ICart, ICartCheck } from "@/utils/common.interface";
 import { Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
@@ -9,9 +9,10 @@ import RecycleRcc from "./recycle-rcc";
 
 type Props = {
     items: Record<string, ICartCheck[]>;
+    packages: ICart[];
 };
 
-export default function PackageCard({ items }: Props) {
+export default function PackageCard({ items, packages }: Props) {
     const [cartItems, setCartItems] =
         useState<Record<string, ICartCheck[]>>(items);
     const [open, setOpen] = useState(false);
@@ -100,6 +101,7 @@ export default function PackageCard({ items }: Props) {
                 selectedItems={Object.values(cartItems).flatMap((items) =>
                     items.filter((item) => item.checked)
                 )}
+                cartItems={packages}
             ></RecycleRcc>
         </>
     );

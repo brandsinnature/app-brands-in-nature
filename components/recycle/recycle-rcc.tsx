@@ -17,15 +17,22 @@ type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
     selectedItems: ICart[];
+    cartItems: ICart[];
 };
 
 export const RecycleContext = createContext<IRecycleContext>({
     selectedItems: [],
     scannedItems: [],
     setScannedItems: () => {},
+    cartItems: [],
 });
 
-export default function RecycleRcc({ open, setOpen, selectedItems }: Props) {
+export default function RecycleRcc({
+    open,
+    setOpen,
+    selectedItems,
+    cartItems,
+}: Props) {
     const [isMounted, setIsMounted] = useState(false);
     const [scannedItems, setScannedItems] = useState<ICart[]>([]);
 
@@ -59,15 +66,16 @@ export default function RecycleRcc({ open, setOpen, selectedItems }: Props) {
                         complete recycling process.
                     </DialogDescription>
                 </DialogHeader>
+
                 <RecycleContext.Provider
                     value={{
                         scannedItems,
                         setScannedItems,
                         selectedItems,
+                        cartItems,
                     }}
                 >
                     <RecycleProviderWrapper />
-
                     <RecycleCart />
                 </RecycleContext.Provider>
             </DialogContent>

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
     BarcodeCapture,
     BarcodeCaptureListener,
@@ -10,14 +10,26 @@ import { RecycleContext } from "./recycle-rcc";
 import { getRetailerByUpi } from "@/data-access/product";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
-import { ICart } from "@/utils/common.interface";
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Button } from "../ui/button";
 
 export default function RecycleComponent() {
     const { sdk } = useSDK();
     const { setBarcode, keepCameraOn, setLoading } = useStore();
-    const { scannedItems, setScannedItems, selectedItems } =
+    const { scannedItems, setScannedItems, selectedItems, cartItems } =
         useContext(RecycleContext);
     const { lat, lng, acc, getCurrentLocation } = useLocation();
+
+    const [open, setOpen] = useState(false);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) await sdk.enableCamera(false);
@@ -79,17 +91,28 @@ export default function RecycleComponent() {
                         return toast.success("Returned");
                     }
 
-                    const foundItem = selectedItems.find(
+                    const foundCart = cartItems.filter(
                         (item) => item.product.gtin === scannedCode
                     );
 
-                    alert(`Scanned code: ${scannedCode}`);
-                    alert(`Found item: ${JSON.stringify(foundItem)}`);
+                    if (foundCart.length < 1) {
+                        await sdk.enableScanning(true);
+                        setLoading(false);
+                        return toast.error("Product not found in cart");
+                    }
 
-                    if (foundItem)
-                        setScannedItems([...scannedItems, foundItem]);
+                    const foundSelected = selectedItems.find(
+                        (item) => item.product.gtin === scannedCode
+                    );
 
-                    // await sdk.enableScanning(true);
+                    if (!foundSelected) {
+                        setOpen(true);
+                        return setLoading(false);
+                    }
+
+                    // Handle case where item is not in selectedItems
+                    setScannedItems([...scannedItems, foundSelected]);
+                    await sdk.enableScanning(true);
                 }
                 setLoading(false);
             },
@@ -99,6 +122,7 @@ export default function RecycleComponent() {
             sdk,
             shouldKeepCameraOn,
             setBarcode,
+            cartItems,
             selectedItems,
             setScannedItems,
             scannedItems,
@@ -115,5 +139,25 @@ export default function RecycleComponent() {
         };
     }, [sdk, onScan]);
 
-    return <div>RecycleComponent</div>;
+    return (
+        <Drawer open={open} onOpenChange={setOpen}>
+            <DrawerContent>
+                <div className="mx-auto w-full max-w-sm">
+                    <DrawerHeader>
+                        <DrawerTitle>Product not selected</DrawerTitle>
+                        <DrawerDescription>
+                            Add the product to the recycle bag
+                        </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="p-4 pb-0"></div>
+                    <DrawerFooter>
+                        <Button>Add</Button>
+                        <DrawerClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                        </DrawerClose>
+                    </DrawerFooter>
+                </div>
+            </DrawerContent>
+        </Drawer>
+    );
 }
