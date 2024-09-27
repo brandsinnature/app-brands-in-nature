@@ -45,10 +45,13 @@ export default function RecycleComponent() {
                     const scannedCode = `${scannedJson.data}`;
 
                     if (isNaN(Number(scannedCode))) {
-                        if (scannedItems?.length < 1)
+                        if (scannedItems?.length < 1) {
+                            await sdk.enableScanning(true);
+                            setLoading(false);
                             return toast.error(
                                 "Scan a product first which you want to recycle"
                             );
+                        }
 
                         const urlObj = new URL(`${scannedJson.data}`);
                         const searchParams = new URLSearchParams(urlObj.search);
@@ -72,6 +75,7 @@ export default function RecycleComponent() {
                             );
                         }
 
+                        setLoading(false);
                         return toast.success("Returned");
                     }
 
@@ -79,8 +83,13 @@ export default function RecycleComponent() {
                         (item) => item.product.gtin === scannedCode
                     );
 
+                    alert(`Scanned code: ${scannedCode}`);
+                    alert(`Found item: ${JSON.stringify(foundItem)}`);
+
                     if (foundItem)
                         setScannedItems([...scannedItems, foundItem]);
+
+                    // await sdk.enableScanning(true);
                 }
                 setLoading(false);
             },
