@@ -10,16 +10,23 @@ import { RecycleContext } from "./recycle-rcc";
 import { getRetailerByUpi } from "@/data-access/product";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
+import { ICart } from "@/utils/common.interface";
 
 export default function RecycleComponent() {
     const { sdk } = useSDK();
     const { setBarcode, keepCameraOn, setLoading } = useStore();
-    const { scannedItems, setScannedItems } = useContext(RecycleContext);
+    const { scannedItems, setScannedItems, selectedItems } =
+        useContext(RecycleContext);
     const { lat, lng, acc, getCurrentLocation } = useLocation();
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) await sdk.enableCamera(false);
     }, [sdk, keepCameraOn]);
+
+    useEffect(() => {
+        getCurrentLocation();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onScan = useMemo<BarcodeCaptureListener>(
         () => ({
@@ -39,7 +46,7 @@ export default function RecycleComponent() {
 
                     if (isNaN(Number(scannedCode))) {
                         if (scannedItems?.length < 1)
-                            toast.error(
+                            return toast.error(
                                 "Scan a product first which you want to recycle"
                             );
 
@@ -64,12 +71,32 @@ export default function RecycleComponent() {
                                 error ?? "Error fetching retailer"
                             );
                         }
+
+                        return toast.success("Returned");
                     }
+
+                    const foundItem = selectedItems.find(
+                        (item) => item.product.gtin === scannedCode
+                    );
+
+                    if (foundItem)
+                        setScannedItems([...scannedItems, foundItem]);
                 }
                 setLoading(false);
             },
         }),
-        [setLoading, sdk, shouldKeepCameraOn, setBarcode, lat, lng, acc]
+        [
+            setLoading,
+            sdk,
+            shouldKeepCameraOn,
+            setBarcode,
+            selectedItems,
+            setScannedItems,
+            scannedItems,
+            lat,
+            lng,
+            acc,
+        ]
     );
 
     useEffect(() => {
