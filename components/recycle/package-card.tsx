@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ICart, ICartCheck } from "@/utils/common.interface";
 import { Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import RecycleRcc from "./recycle-rcc";
 
 type Props = {
@@ -16,6 +16,7 @@ export default function PackageCard({ items, packages }: Props) {
     const [cartItems, setCartItems] =
         useState<Record<string, ICartCheck[]>>(items);
     const [open, setOpen] = useState(false);
+    const [selectedItems, setSelectedItems] = useState<ICart[]>([]);
 
     const toggleSelected = (selected: boolean, index: number, date: string) => {
         setCartItems((prev) => {
@@ -27,6 +28,14 @@ export default function PackageCard({ items, packages }: Props) {
             };
         });
     };
+
+    useEffect(() => {
+        setSelectedItems(
+            Object.values(cartItems).flatMap((items) =>
+                items.filter((item) => item.checked)
+            )
+        );
+    }, [cartItems]);
 
     return (
         <>
@@ -98,9 +107,8 @@ export default function PackageCard({ items, packages }: Props) {
             <RecycleRcc
                 open={open}
                 setOpen={setOpen}
-                selectedItems={Object.values(cartItems).flatMap((items) =>
-                    items.filter((item) => item.checked)
-                )}
+                selectedItems={selectedItems}
+                setSelectedItems={setSelectedItems}
                 cartItems={packages}
             ></RecycleRcc>
         </>

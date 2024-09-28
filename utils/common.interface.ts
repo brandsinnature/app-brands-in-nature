@@ -236,12 +236,8 @@ export interface IJwtPayload extends JwtPayload {
 }
 
 export interface IReturn {
-    latitude: number;
-    longitude: number;
-    accuracy: number;
-    pa: string;
-    pn: string;
-    buyId: string;
+    merchantId: string;
+    productIds: string[];
 }
 
 export interface ICart {
@@ -278,6 +274,7 @@ export interface IHistory {
 export interface IRecycleContext {
     selectedItems: ICart[];
     scannedItems: ICart[];
-    setScannedItems: (items: ICart[]) => void;
     cartItems: ICart[];
+    setSelectedItems: (items: ICart[]) => void;
+    setScannedItems: (items: ICart[]) => void;
 }

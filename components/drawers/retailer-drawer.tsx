@@ -45,7 +45,11 @@ export default function RetailerDrawer({
     if (!isMounted) return null;
 
     const handlePayment = async () => {
-        const { message, error } = await bulkCartStatusUpdate("cart", "bought");
+        const { message, error } = await bulkCartStatusUpdate(
+            "cart",
+            "bought",
+            `${retailer?.id}`
+        );
 
         if (error) return toast.error(error);
 

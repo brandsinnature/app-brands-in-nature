@@ -7,7 +7,7 @@ import {
 import { useStore } from "../scandit/store";
 import { useSDK } from "../scandit/sdk";
 import { RecycleContext } from "./recycle-rcc";
-import { getRetailerByUpi } from "@/data-access/product";
+import { getRetailerByUpi, returnProducts } from "@/data-access/product";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
 import {
@@ -18,18 +18,26 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-    DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
+import { ICart } from "@/utils/common.interface";
+import { useRouter } from "next/navigation";
 
 export default function RecycleComponent() {
     const { sdk } = useSDK();
     const { setBarcode, keepCameraOn, setLoading } = useStore();
-    const { scannedItems, setScannedItems, selectedItems, cartItems } =
-        useContext(RecycleContext);
+    const {
+        scannedItems,
+        setScannedItems,
+        selectedItems,
+        cartItems,
+        setSelectedItems,
+    } = useContext(RecycleContext);
     const { lat, lng, acc, getCurrentLocation } = useLocation();
+    const router = useRouter();
 
     const [open, setOpen] = useState(false);
+    const [foundCartItem, setFoundCartItem] = useState<ICart | null>(null);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) await sdk.enableCamera(false);
@@ -87,8 +95,18 @@ export default function RecycleComponent() {
                             );
                         }
 
-                        setLoading(false);
-                        return toast.success("Returned");
+                        const { error: returnError } = await returnProducts({
+                            merchantId: data.id,
+                            productIds: scannedItems.map((item) => item.id),
+                        });
+
+                        if (returnError) {
+                            await sdk.enableScanning(true);
+                            setLoading(false);
+                            return toast.error(returnError);
+                        }
+
+                        return router.push("/recycle/success");
                     }
 
                     const foundCart = cartItems.filter(
@@ -101,6 +119,8 @@ export default function RecycleComponent() {
                         return toast.error("Product not found in cart");
                     }
 
+                    setFoundCartItem(foundCart[0]);
+
                     const foundSelected = selectedItems.find(
                         (item) => item.product.gtin === scannedCode
                     );
@@ -110,7 +130,6 @@ export default function RecycleComponent() {
                         return setLoading(false);
                     }
 
-                    // Handle case where item is not in selectedItems
                     setScannedItems([...scannedItems, foundSelected]);
                     await sdk.enableScanning(true);
                 }
@@ -129,6 +148,7 @@ export default function RecycleComponent() {
             lat,
             lng,
             acc,
+            router,
         ]
     );
 
@@ -139,19 +159,40 @@ export default function RecycleComponent() {
         };
     }, [sdk, onScan]);
 
+    // useEffect to toggle scanning when drawer is opened/closed
+    useEffect(() => {
+        async function openHandler() {
+            if (!open) await sdk.enableScanning(true);
+        }
+
+        openHandler();
+    }, [open, sdk]);
+
+    const handleSelect = () => {
+        if (foundCartItem) {
+            setSelectedItems([...selectedItems, foundCartItem]);
+            setScannedItems([...scannedItems, foundCartItem]);
+        }
+
+        toast.success("Product added to recycle bag");
+        setOpen(false);
+    };
+
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerContent>
                 <div className="mx-auto w-full max-w-sm">
-                    <DrawerHeader>
-                        <DrawerTitle>Product not selected</DrawerTitle>
+                    <DrawerHeader className="text-left">
+                        <DrawerTitle className="font-normal font-voska text-2xl tracking-[0.0125em]">
+                            Product not selected
+                        </DrawerTitle>
                         <DrawerDescription>
-                            Add the product to the recycle bag
+                            Add the product to the recycle bag?
                         </DrawerDescription>
                     </DrawerHeader>
                     <div className="p-4 pb-0"></div>
                     <DrawerFooter>
-                        <Button>Add</Button>
+                        <Button onClick={handleSelect}>Add Product</Button>
                         <DrawerClose asChild>
                             <Button variant="outline">Cancel</Button>
                         </DrawerClose>

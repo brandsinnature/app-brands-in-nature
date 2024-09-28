@@ -2,7 +2,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -17,11 +16,13 @@ type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
     selectedItems: ICart[];
+    setSelectedItems: (items: ICart[]) => void;
     cartItems: ICart[];
 };
 
 export const RecycleContext = createContext<IRecycleContext>({
     selectedItems: [],
+    setSelectedItems: () => {},
     scannedItems: [],
     setScannedItems: () => {},
     cartItems: [],
@@ -31,6 +32,7 @@ export default function RecycleRcc({
     open,
     setOpen,
     selectedItems,
+    setSelectedItems,
     cartItems,
 }: Props) {
     const [isMounted, setIsMounted] = useState(false);
@@ -73,6 +75,7 @@ export default function RecycleRcc({
                         setScannedItems,
                         selectedItems,
                         cartItems,
+                        setSelectedItems,
                     }}
                 >
                     <RecycleProviderWrapper />

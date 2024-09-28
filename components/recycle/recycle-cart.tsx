@@ -67,8 +67,8 @@ export default function RecycleCart({}: Props) {
                 </DialogHeader>
                 <div className="gap-4 grid text-center">
                     <p className="mx-auto max-w-80 font-voska text-2xl">
-                        Get ₹{totalQuantity * costPerQuantity}.00 refund when
-                        you recycle.
+                        You will get ₹{totalQuantity * costPerQuantity}.00
+                        refund when you recycle.
                     </p>
 
                     <div className="space-y-6">

@@ -311,7 +311,11 @@ export async function countCartItems() {
     return data.reduce((acc, item) => acc + item.quantity, 0);
 }
 
-export async function bulkCartStatusUpdate(status: string, newStatus: string) {
+export async function bulkCartStatusUpdate(
+    status: string,
+    newStatus: string,
+    bought_from: string
+) {
     const supabase = createClient();
 
     const created_by = await getSessionUserId();
@@ -319,7 +323,11 @@ export async function bulkCartStatusUpdate(status: string, newStatus: string) {
 
     const { error } = await supabase
         .from("cart")
-        .update({ status: newStatus })
+        .update({
+            status: newStatus,
+            bought_from,
+            bought_at: new Date().toISOString(),
+        })
         .eq("created_by", created_by)
         .eq("status", status);
 
@@ -452,4 +460,27 @@ export async function getBoughtPackages() {
     if (error) return [];
 
     return data;
+}
+
+export async function returnProducts({ merchantId, productIds }: IReturn) {
+    const supabase = createClient();
+
+    const created_by = await getSessionUserId();
+    if (!created_by) return { error: "User not found" };
+
+    const { data, error } = await supabase
+        .from("cart")
+        .update([
+            {
+                status: "returned",
+                returned_to: merchantId,
+                returned_at: new Date().toISOString(),
+            },
+        ])
+        .eq("created_by", created_by)
+        .in("id", productIds);
+
+    if (error) return { error: error.message };
+
+    return { data };
 }
