@@ -7,7 +7,7 @@ import {
 import { useStore } from "../scandit/store";
 import { useSDK } from "../scandit/sdk";
 import { RecycleContext } from "./recycle-rcc";
-import { getRetailerByUpi, returnProducts } from "@/data-access/product";
+import { getRetailerByUpi } from "@/data-access/product";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
 import {
@@ -20,8 +20,8 @@ import {
     DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
-import { ICart } from "@/utils/common.interface";
-import { useRouter } from "next/navigation";
+import { ICart, IGetRetailer } from "@/utils/common.interface";
+import RecycleConfirmation from "./recycle-confirmation";
 
 export default function RecycleComponent() {
     const { sdk } = useSDK();
@@ -34,10 +34,11 @@ export default function RecycleComponent() {
         setSelectedItems,
     } = useContext(RecycleContext);
     const { lat, lng, acc, getCurrentLocation } = useLocation();
-    const router = useRouter();
 
     const [open, setOpen] = useState(false);
     const [foundCartItem, setFoundCartItem] = useState<ICart | null>(null);
+    const [recycleConfirmation, setRecycleConfirmation] = useState(true);
+    const [retailer, setRetailer] = useState<IGetRetailer | null>(null);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) await sdk.enableCamera(false);
@@ -88,26 +89,17 @@ export default function RecycleComponent() {
                             acc,
                         });
 
+                        setLoading(false);
+
                         if (error || !data) {
                             await sdk.enableScanning(true);
-                            setLoading(false);
                             return toast.error(
                                 error ?? "Error fetching retailer"
                             );
                         }
 
-                        const { error: returnError } = await returnProducts({
-                            merchantId: data.id,
-                            productIds: scannedItems.map((item) => item.id),
-                        });
-
-                        if (returnError) {
-                            await sdk.enableScanning(true);
-                            setLoading(false);
-                            return toast.error(returnError);
-                        }
-
-                        return router.push("/recycle/success");
+                        setRecycleConfirmation(true);
+                        setRetailer({ pa, pn, lat, lng, acc, id: data.id });
                     }
 
                     const foundCart = cartItems.filter(
@@ -151,7 +143,6 @@ export default function RecycleComponent() {
             lat,
             lng,
             acc,
-            router,
         ]
     );
 
@@ -162,7 +153,7 @@ export default function RecycleComponent() {
         };
     }, [sdk, onScan]);
 
-    // useEffect to toggle scanning when drawer is opened/closed
+    // useEffect to toggle scanning when main drawer is opened/closed
     useEffect(() => {
         async function openHandler() {
             if (!open) await sdk.enableScanning(true);
@@ -170,6 +161,15 @@ export default function RecycleComponent() {
 
         openHandler();
     }, [open, sdk]);
+
+    // useEffect to toggle scanning when confirmation drawer is opened/closed
+    useEffect(() => {
+        async function openHandler() {
+            if (!recycleConfirmation) await sdk.enableScanning(true);
+        }
+
+        openHandler();
+    }, [recycleConfirmation, sdk]);
 
     const handleSelect = () => {
         if (foundCartItem) {
@@ -187,26 +187,34 @@ export default function RecycleComponent() {
     };
 
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerContent>
-                <div className="mx-auto w-full max-w-sm">
-                    <DrawerHeader className="text-left">
-                        <DrawerTitle className="font-normal font-voska text-2xl tracking-[0.0125em]">
-                            Product not selected
-                        </DrawerTitle>
-                        <DrawerDescription>
-                            Add the product to the recycle bag?
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="p-4 pb-0"></div>
-                    <DrawerFooter>
-                        <Button onClick={handleSelect}>Add Product</Button>
-                        <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DrawerClose>
-                    </DrawerFooter>
-                </div>
-            </DrawerContent>
-        </Drawer>
+        <>
+            <Drawer open={open} onOpenChange={setOpen}>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm">
+                        <DrawerHeader className="text-left">
+                            <DrawerTitle className="font-normal font-voska text-2xl tracking-[0.0125em]">
+                                Product not selected
+                            </DrawerTitle>
+                            <DrawerDescription>
+                                Add the product to the recycle bag?
+                            </DrawerDescription>
+                        </DrawerHeader>
+                        <div className="p-4 pb-0"></div>
+                        <DrawerFooter>
+                            <Button onClick={handleSelect}>Add Product</Button>
+                            <DrawerClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+
+            <RecycleConfirmation
+                open={recycleConfirmation}
+                setOpen={setRecycleConfirmation}
+                retailer={retailer}
+            />
+        </>
     );
 }
