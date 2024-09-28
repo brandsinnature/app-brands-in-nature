@@ -66,6 +66,7 @@ export default function RecycleComponent() {
 
                     if (isNaN(Number(scannedCode))) {
                         if (scannedItems?.length < 1) {
+                            await wait();
                             await sdk.enableScanning(true);
                             setLoading(false);
                             return toast.error(
@@ -131,6 +132,8 @@ export default function RecycleComponent() {
                     }
 
                     setScannedItems([...scannedItems, foundSelected]);
+
+                    await wait();
                     await sdk.enableScanning(true);
                 }
                 setLoading(false);
@@ -176,6 +179,11 @@ export default function RecycleComponent() {
 
         toast.success("Product added to recycle bag");
         setOpen(false);
+    };
+
+    // wait so that it does'nt multiple times immediately
+    const wait = async (time?: number) => {
+        await new Promise((resolve) => setTimeout(resolve, time ?? 3000));
     };
 
     return (

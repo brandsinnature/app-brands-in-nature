@@ -77,7 +77,7 @@ export default function RecycleCart({}: Props) {
                                 key={id}
                                 className={cn(
                                     "flex justify-between items-center gap-3 p-3 rounded-xl bg-muted/40",
-                                    isScanned(id) && "bg-primary/10"
+                                    isScanned(id) && "bg-primary/30"
                                 )}
                             >
                                 <div className="flex items-center gap-4">
