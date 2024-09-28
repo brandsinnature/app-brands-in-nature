@@ -131,7 +131,19 @@ export default function RecycleComponent() {
             },
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [setLoading, sdk, shouldKeepCameraOn, setBarcode]
+        [
+            setLoading,
+            sdk,
+            shouldKeepCameraOn,
+            setBarcode,
+            cartItems,
+            selectedItems,
+            setScannedItems,
+            // scannedItems,
+            lat,
+            lng,
+            acc,
+        ]
     );
 
     useEffect(() => {
