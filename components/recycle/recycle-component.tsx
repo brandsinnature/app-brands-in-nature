@@ -37,7 +37,7 @@ export default function RecycleComponent() {
 
     const [open, setOpen] = useState(false);
     const [foundCartItem, setFoundCartItem] = useState<ICart | null>(null);
-    const [recycleConfirmation, setRecycleConfirmation] = useState(true);
+    const [recycleConfirmation, setRecycleConfirmation] = useState(false);
     const [retailer, setRetailer] = useState<IGetRetailer | null>(null);
 
     const shouldKeepCameraOn = useCallback(async () => {
