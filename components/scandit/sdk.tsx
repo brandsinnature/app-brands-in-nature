@@ -126,6 +126,7 @@ export function createSDKFacade(): SDK {
                 BarcodeCapture.recommendedCameraSettings
             );
             await context.setFrameSource(camera);
+            await context.addMode(barcodeCapture);
         },
         async cleanup() {
             console.log("Cleaning up start ....");
