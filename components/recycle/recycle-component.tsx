@@ -66,15 +66,6 @@ export default function RecycleComponent() {
                     const scannedCode = `${scannedJson.data}`;
 
                     if (isNaN(Number(scannedCode))) {
-                        if (scannedItems?.length < 1) {
-                            await wait();
-                            await sdk.enableScanning(true);
-                            setLoading(false);
-                            return toast.error(
-                                "Scan a product first which you want to recycle"
-                            );
-                        }
-
                         const urlObj = new URL(`${scannedJson.data}`);
                         const searchParams = new URLSearchParams(urlObj.search);
 
@@ -140,7 +131,7 @@ export default function RecycleComponent() {
             },
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [setLoading, sdk, shouldKeepCameraOn, setBarcode, scannedItems]
+        [setLoading, sdk, shouldKeepCameraOn, setBarcode]
     );
 
     useEffect(() => {
