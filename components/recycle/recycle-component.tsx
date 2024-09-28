@@ -126,13 +126,14 @@ export default function RecycleComponent() {
                     setScannedItems([...scannedItems, foundSelected[0]]);
 
                     toast.success("Product added to recycle bag");
+                    await wait();
                     await sdk.enableScanning(true);
                 }
                 setLoading(false);
             },
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [setLoading, sdk, shouldKeepCameraOn, setBarcode]
+        [setLoading, sdk, shouldKeepCameraOn, setBarcode, scannedItems]
     );
 
     useEffect(() => {

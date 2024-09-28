@@ -113,13 +113,6 @@ export default function RecycleCart({}: Props) {
                         ))}
                     </div>
                 </div>
-                <DialogFooter className="mt-auto">
-                    <Link href="/deposit">
-                        <Button className="w-full">
-                            Deposit {totalItems} packages
-                        </Button>
-                    </Link>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
