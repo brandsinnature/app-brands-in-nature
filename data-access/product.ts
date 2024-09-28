@@ -356,36 +356,43 @@ export async function getHistory(userId?: string) {
 export async function getScanItemsData() {
     const supabase = createClient();
 
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    sevenDaysAgo.setHours(0, 0, 0, 0); // Set to start of day
+    // Get the current date in UTC
+    const now = new Date();
+    const todayUTC = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
 
-    const today = new Date();
-    today.setHours(23, 59, 59, 999); // Set to end of day
+    // Calculate 6 days ago in UTC (to get 7 days including today)
+    const sixDaysAgoUTC = new Date(todayUTC);
+    sixDaysAgoUTC.setUTCDate(todayUTC.getUTCDate() - 6);
 
     const { data, error } = await supabase
         .from("cart_history")
         .select("created_at")
-        .gte("created_at", sevenDaysAgo.toISOString())
+        .gte("created_at", sixDaysAgoUTC.toISOString())
+        .lt("created_at", new Date(todayUTC.getTime() + 86400000).toISOString()) // Include all of today
         .order("created_at");
 
+    // Initialize allDates with the past 7 days (including today)
     const allDates: { [key: string]: number } = {};
     for (
-        let d = new Date(sevenDaysAgo);
-        d <= today;
-        d.setDate(d.getDate() + 1)
+        let d = new Date(sixDaysAgoUTC);
+        d <= todayUTC;
+        d.setUTCDate(d.getUTCDate() + 1)
     ) {
         allDates[d.toISOString().split("T")[0]] = 0;
     }
 
-    if (error)
+    if (error) {
+        console.error("Error fetching cart history:", error);
         return Object.entries(allDates).map(([date]) => ({
             date,
             scanned: 0,
         }));
+    }
 
     data.forEach((item) => {
-        const date = item.created_at.split("T")[0];
+        const date = new Date(item.created_at).toISOString().split("T")[0];
         allDates[date] = (allDates[date] || 0) + 1;
     });
 

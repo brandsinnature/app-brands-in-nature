@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function Recycle() {
     const packages = await getBoughtPackages();
 
-    const groupedCartItems = packages.reduce((acc, item) => {
+    const groupedCartItems = packages.reduceRight((acc, item) => {
         const category = categorizeDate(new Date(item.created_at));
         if (!acc[category]) acc[category] = [];
 

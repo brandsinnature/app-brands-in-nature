@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ICart, ICartCheck } from "@/utils/common.interface";
 import { Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import RecycleRcc from "./recycle-rcc";
 
 type Props = {
