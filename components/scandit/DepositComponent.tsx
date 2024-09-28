@@ -6,7 +6,6 @@ import type {
 } from "scandit-web-datacapture-barcode";
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
-import { CgSpinnerAlt } from "react-icons/cg";
 import { useLocation } from "@/hooks/useLocation";
 import { countCartItems, getRetailerByUpi } from "@/data-access/product";
 import { toast } from "sonner";

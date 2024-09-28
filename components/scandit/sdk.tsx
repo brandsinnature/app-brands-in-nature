@@ -128,6 +128,7 @@ export function createSDKFacade(): SDK {
             await context.setFrameSource(camera);
         },
         async cleanup() {
+            console.log("Cleaning up start ....");
             if (barcodeCapture) {
                 await barcodeCapture.setEnabled(false);
                 barcodeCapture = undefined;

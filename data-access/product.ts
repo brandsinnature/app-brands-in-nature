@@ -384,7 +384,6 @@ export async function getScanItemsData() {
     }
 
     if (error) {
-        console.error("Error fetching cart history:", error);
         return Object.entries(allDates).map(([date]) => ({
             date,
             scanned: 0,
