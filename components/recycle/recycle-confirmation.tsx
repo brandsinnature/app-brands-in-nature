@@ -83,17 +83,26 @@ export default function RecycleConfirmation({
                             Recycling Confirmation
                         </DrawerDescription>
                     </DrawerHeader>
+                    <div className="py-4">
+                        {quantity < 1 && (
+                            <p>
+                                Scan a product first which you want to recycle
+                            </p>
+                        )}
+                    </div>
                     <DrawerFooter>
-                        <Button
-                            onClick={handleRecycle}
-                            disabled={loading}
-                            loading={loading}
-                        >
-                            Continue
-                        </Button>
+                        {quantity > 0 && (
+                            <Button
+                                onClick={handleRecycle}
+                                disabled={loading}
+                                loading={loading}
+                            >
+                                Continue
+                            </Button>
+                        )}
                         <DrawerClose asChild>
                             <Button variant="outline" disabled={loading}>
-                                Cancel
+                                Close
                             </Button>
                         </DrawerClose>
                     </DrawerFooter>

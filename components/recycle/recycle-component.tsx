@@ -99,7 +99,14 @@ export default function RecycleComponent() {
                         }
 
                         setRecycleConfirmation(true);
-                        setRetailer({ pa, pn, lat, lng, acc, id: data.id });
+                        return setRetailer({
+                            pa,
+                            pn,
+                            lat,
+                            lng,
+                            acc,
+                            id: data.id,
+                        });
                     }
 
                     const foundCart = cartItems.filter(
