@@ -77,19 +77,14 @@ export default function RecycleConfirmation({
                                     />
                                 </div>
                             </div>
-                            Ready to finish recycling?
+                            {quantity < 1
+                                ? "Scan a product first which you want to recycle"
+                                : "Ready to finish recycling?"}
                         </DrawerTitle>
                         <DrawerDescription className="sr-only">
                             Recycling Confirmation
                         </DrawerDescription>
                     </DrawerHeader>
-                    <div className="py-4">
-                        {quantity < 1 && (
-                            <p>
-                                Scan a product first which you want to recycle
-                            </p>
-                        )}
-                    </div>
                     <DrawerFooter>
                         {quantity > 0 && (
                             <Button

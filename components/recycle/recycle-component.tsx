@@ -138,7 +138,7 @@ export default function RecycleComponent() {
             setBarcode,
             cartItems,
             selectedItems,
-            setScannedItems,
+            // setScannedItems,
             // scannedItems,
             lat,
             lng,
