@@ -131,7 +131,6 @@ export default function RecycleComponent() {
                 setLoading(false);
             },
         }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             setLoading,
             sdk,
@@ -139,6 +138,7 @@ export default function RecycleComponent() {
             setBarcode,
             cartItems,
             selectedItems,
+            setScannedItems,
             scannedItems,
             lat,
             lng,
