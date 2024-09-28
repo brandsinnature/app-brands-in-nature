@@ -114,7 +114,7 @@ export default function RecycleComponent() {
 
                     setFoundCartItem(foundCart[0]);
 
-                    const foundSelected = selectedItems.find(
+                    const foundSelected = selectedItems.filter(
                         (item) => item.product.gtin === scannedCode
                     );
 
@@ -123,14 +123,15 @@ export default function RecycleComponent() {
                         return setLoading(false);
                     }
 
-                    setScannedItems([...scannedItems, foundSelected]);
+                    setScannedItems([...scannedItems, foundSelected[0]]);
 
-                    await wait();
+                    toast.success("Product added to recycle bag");
                     await sdk.enableScanning(true);
                 }
                 setLoading(false);
             },
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             setLoading,
             sdk,
@@ -138,7 +139,6 @@ export default function RecycleComponent() {
             setBarcode,
             cartItems,
             selectedItems,
-            setScannedItems,
             scannedItems,
             lat,
             lng,
@@ -193,7 +193,7 @@ export default function RecycleComponent() {
                     <div className="mx-auto w-full max-w-sm">
                         <DrawerHeader className="text-left">
                             <DrawerTitle className="font-normal font-voska text-2xl tracking-[0.0125em]">
-                                Product not selected
+                                Product not in recycle bag
                             </DrawerTitle>
                             <DrawerDescription>
                                 Add the product to the recycle bag?
