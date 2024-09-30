@@ -3,6 +3,7 @@ import { useSDK } from "./sdk";
 import { useStore } from "./store";
 import { CgSpinnerAlt } from "react-icons/cg";
 import Show from "./Show";
+import { usePathname } from "next/navigation";
 
 export default function ScanditInnerWrapper({
     children,
@@ -12,6 +13,7 @@ export default function ScanditInnerWrapper({
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
     const { loading } = useStore();
+    const pathname = usePathname();
 
     useEffect(() => {
         async function onMount(): Promise<void> {
@@ -24,11 +26,11 @@ export default function ScanditInnerWrapper({
 
         void onMount();
         return () => {
-            // if (loaded) {
-            //     sdk.cleanup();
-            // }
+            if (loaded) {
+                sdk.cleanup();
+            }
         };
-    }, [loaded, sdk]);
+    }, [loaded, sdk, pathname]);
 
     return (
         <>
