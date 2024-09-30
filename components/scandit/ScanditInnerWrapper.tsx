@@ -13,7 +13,6 @@ export default function ScanditInnerWrapper({
     const host = useRef<HTMLDivElement | null>(null);
     const { loaded, sdk } = useSDK();
     const { loading } = useStore();
-    const pathname = usePathname();
 
     useEffect(() => {
         async function onMount(): Promise<void> {
@@ -30,7 +29,7 @@ export default function ScanditInnerWrapper({
                 sdk.detachFromElement();
             }
         };
-    }, [loaded, sdk, pathname]);
+    }, [loaded, sdk]);
 
     return (
         <>
