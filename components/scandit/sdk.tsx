@@ -126,7 +126,6 @@ export function createSDKFacade(): SDK {
                 BarcodeCapture.recommendedCameraSettings
             );
             await context.setFrameSource(camera);
-            await context.addMode(barcodeCapture);
         },
         async cleanup() {
             console.log("Cleaning up start ....");
@@ -157,7 +156,6 @@ export function createSDKFacade(): SDK {
             if (context) {
                 console.log("Cleaning up context ....");
 
-                await context.removeAllModes();
                 await context.dispose();
                 context = undefined;
             }
@@ -280,3 +278,4 @@ export function useSDK(): SDKWithLoadingStatus {
     }
     return value;
 }
+meet.google.com;
