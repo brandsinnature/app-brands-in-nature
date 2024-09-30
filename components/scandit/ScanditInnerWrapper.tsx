@@ -27,7 +27,7 @@ export default function ScanditInnerWrapper({
         void onMount();
         return () => {
             if (loaded) {
-                sdk.cleanup();
+                sdk.detachFromElement();
             }
         };
     }, [loaded, sdk, pathname]);
