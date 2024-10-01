@@ -31,9 +31,9 @@ export const useLocation = () => {
             },
             (error) => {
                 toast.error(
-                    `Error: ${error.message}. Please refresh the page and enable location services.`,
+                    `Error: ${error.message}. Please refresh the page and allow location access or try switching location services on manually in your device settings.`,
                     {
-                        duration: 8000,
+                        duration: 10000,
                         action: {
                             label: "Refresh",
                             onClick: () => window.location.reload(),

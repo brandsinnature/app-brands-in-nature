@@ -67,7 +67,7 @@ export function createSDKFacade(): SDK {
             host = document.createElement("div");
             host.style.display = "none";
             host.style.width = "100%";
-            host.style.height = "100%";
+            host.style.height = "calc(100% - 7.5rem)";
             document.body.append(host);
         }
         return host;
