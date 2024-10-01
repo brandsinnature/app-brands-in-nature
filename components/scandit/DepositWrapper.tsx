@@ -51,10 +51,10 @@ export default function DepositWrapper({ open, setOpen, retailer }: Props) {
             <div className="top-0 left-0 z-50 fixed flex items-center gap-4 bg-background px-4 py-3">
                 <Button
                     size={"icon"}
-                    className="rounded-full w-12 h-12 shrink-0"
+                    className="rounded-full shrink-0"
                     onClick={toogleToCart}
                 >
-                    <ArrowLeft size={28} />
+                    <ArrowLeft size={20} />
                 </Button>
                 <p className="font-normal font-voska text-xl tracking-[0.0125em]">
                     Scan Retailer&apos;s QR code to deposit your items
