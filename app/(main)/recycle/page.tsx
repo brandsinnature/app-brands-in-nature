@@ -24,7 +24,7 @@ export default async function Recycle() {
     }, {} as Record<string, ICartCheck[]>);
 
     return (
-        <Container className="space-y-6">
+        <Container className="space-y-6 pb-20">
             <div className="space-y-1">
                 <p className="font-normal font-voska text-2xl text-left tracking-[0.0125em]">
                     Recycle packages
