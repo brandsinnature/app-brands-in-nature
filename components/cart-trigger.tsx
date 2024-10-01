@@ -20,6 +20,7 @@ import { Minus, Package, Plus } from "lucide-react";
 import { categorizeDate } from "@/lib/utils";
 import CartEditTrigger from "./cart-edit-trigger";
 import Link from "next/link";
+import { parseAsString, useQueryState } from "next-usequerystate";
 
 type Props = {
     open: boolean;
@@ -37,6 +38,10 @@ export default function CartTrigger({
     setCartItems,
 }: Props) {
     const [isMounted, setIsMounted] = useState(false);
+    const [_, setMode] = useQueryState(
+        "mode",
+        parseAsString.withDefault("cart")
+    );
 
     const costPerQuantity = parseInt(
         process.env.NEXT_PUBLIC_PER_QUANTITY_COST || "5"
@@ -94,6 +99,11 @@ export default function CartTrigger({
     const handleItemRemove = async (id: string) => {
         setCartItems((prev) => prev.filter((item) => item.id !== id));
         await removeProductFromCart(id);
+    };
+
+    const toggleToDeposit = () => {
+        setMode("deposit");
+        setOpen(false);
     };
 
     return (
@@ -233,11 +243,9 @@ export default function CartTrigger({
                     </div>
                 </div>
                 <DialogFooter className="mt-auto">
-                    <Link href="/deposit">
-                        <Button className="w-full">
-                            Deposit {totalItems} packages
-                        </Button>
-                    </Link>
+                    <Button className="w-full" onClick={toggleToDeposit}>
+                        Deposit {totalItems} packages
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -1,11 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import CartTrigger from "../cart-trigger";
-import ProductDrawer from "../product-drawer";
-import { ICart } from "@/utils/common.interface";
 import {
     addProductToCart,
-    getAllCartItems,
     getProductByGtin,
+    getRetailerByUpi,
 } from "@/data-access/product";
 import { useSDK } from "./sdk";
 import { useStore } from "./store";
@@ -15,14 +12,25 @@ import {
     BarcodeCaptureListener,
     BarcodeCaptureSession,
 } from "scandit-web-datacapture-barcode";
+import Show from "./Show";
+import CartWrapper from "./CartWrapper";
+import { parseAsString, useQueryState } from "next-usequerystate";
+import { useLocation } from "@/hooks/useLocation";
+import DepositWrapper from "./DepositWrapper";
 
 export default function ScannerComponent() {
     const { sdk } = useSDK();
     const { setBarcode, keepCameraOn, setLoading } = useStore();
     const [open, setOpen] = useState(false);
-    const [cartOpen, setCartOpen] = useState(false);
-    const [product, setProduct] = useState(null);
-    const [cartItems, setCartItems] = useState<ICart[]>([]);
+    const [product, setProduct] = useState<any>(null);
+    const { lat, lng, acc, getCurrentLocation } = useLocation();
+
+    const [mode, _] = useQueryState("mode", parseAsString.withDefault("cart"));
+
+    useEffect(() => {
+        getCurrentLocation();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const shouldKeepCameraOn = useCallback(async () => {
         if (!keepCameraOn) await sdk.enableCamera(false);
@@ -45,9 +53,36 @@ export default function ScannerComponent() {
 
                     // Check if scanned code is a number
                     if (isNaN(Number(scannedCode))) {
-                        toast.error("Invalid barcode");
-                        await sdk.enableScanning(true);
-                        return setLoading(false);
+                        if (mode === "cart") {
+                            toast.error("Invalid barcode");
+                            await sdk.enableScanning(true);
+                            return setLoading(false);
+                        }
+
+                        const urlObj = new URL(`${scannedJson.data}`);
+                        const searchParams = new URLSearchParams(urlObj.search);
+
+                        const pa = searchParams.get("pa");
+                        const pn = searchParams.get("pn");
+
+                        const { error, data } = await getRetailerByUpi({
+                            pa,
+                            pn,
+                            lat,
+                            lng,
+                            acc,
+                        });
+
+                        if (error || !data) {
+                            await sdk.enableScanning(true);
+                            setLoading(false);
+                            return toast.error(
+                                error ?? "Error fetching retailer"
+                            );
+                        }
+
+                        setProduct({ pa, pn, lat, lng, acc, id: data.id });
+                        return setOpen(true);
                     }
 
                     setBarcode(scannedJson);
@@ -62,7 +97,7 @@ export default function ScannerComponent() {
                 setLoading(false);
             },
         }),
-        [setLoading, sdk, shouldKeepCameraOn, setBarcode]
+        [setLoading, shouldKeepCameraOn, sdk, setBarcode, mode, lat, lng, acc]
     );
 
     useEffect(() => {
@@ -72,44 +107,24 @@ export default function ScannerComponent() {
         };
     }, [sdk, onScan]);
 
-    // useEffect to toggle scanning when product drawer is opened/closed
+    // Reset product state when mode changes
     useEffect(() => {
-        async function openHandler() {
-            if (!open) await sdk.enableScanning(true);
-        }
-
-        openHandler();
-        fetchCart();
-    }, [open, sdk]);
-
-    // useEffect to toggle scanning when cart drawer is opened/closed
-    useEffect(() => {
-        async function openHandler() {
-            if (cartOpen) await sdk.enableScanning(false);
-            else await sdk.enableScanning(true);
-        }
-
-        openHandler();
-    }, [cartOpen, sdk]);
-
-    async function fetchCart() {
-        const data = await getAllCartItems();
-        setCartItems(data as unknown as ICart[]);
-    }
+        setProduct(null);
+    }, [mode]);
 
     return (
         <>
-            <ProductDrawer open={open} setOpen={setOpen} product={product} />
+            <Show when={mode === "cart"}>
+                <CartWrapper open={open} setOpen={setOpen} product={product} />
+            </Show>
 
-            <div className="bottom-24 left-4 absolute">
-                <CartTrigger
-                    open={cartOpen}
-                    setOpen={setCartOpen}
-                    fetchCart={fetchCart}
-                    cartItems={cartItems}
-                    setCartItems={setCartItems}
+            <Show when={mode === "deposit"}>
+                <DepositWrapper
+                    open={open}
+                    setOpen={setOpen}
+                    retailer={product}
                 />
-            </div>
+            </Show>
         </>
     );
 }

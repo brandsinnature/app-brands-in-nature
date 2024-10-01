@@ -3,7 +3,6 @@ import { useSDK } from "./sdk";
 import { useStore } from "./store";
 import { CgSpinnerAlt } from "react-icons/cg";
 import Show from "./Show";
-import { usePathname } from "next/navigation";
 
 export default function ScanditInnerWrapper({
     children,
