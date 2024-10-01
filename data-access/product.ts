@@ -180,31 +180,33 @@ export async function addProductToCart(product: IProduct) {
         if (error) return { error: error.message };
     }
 
-    const { data, error, count } = await supabase
+    const { data, error } = await supabase
         .from("cart")
-        .upsert(
-            {
-                product_id: product.id,
-                created_by,
-                quantity: 1,
-                status: "cart",
-            },
-            {
-                onConflict: "product_id,created_by,status",
-                ignoreDuplicates: true,
-                count: "exact",
-            }
-        )
-        .select();
+        .select("*")
+        .eq("product_id", product.id)
+        .eq("created_by", created_by)
+        .eq("status", "cart")
+        .single();
 
-    if (error) return { error: error.message };
-
-    if (count === 0)
+    if (data?.id && !error) {
         await supabase.rpc("increment_quantity", {
             p_product_id: product.id,
             p_created_by: created_by,
             p_status: "cart",
         });
+    } else {
+        const { error } = await supabase
+            .from("cart")
+            .insert({
+                product_id: product.id,
+                created_by,
+                quantity: 1,
+                status: "cart",
+            })
+            .select("*");
+
+        if (error) return { error: error.message };
+    }
 
     await supabase.from("cart_history").insert({
         product_id: product.id,
