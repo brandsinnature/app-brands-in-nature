@@ -155,7 +155,7 @@ export async function addProductToCart(product: IProduct) {
     const created_by = await getSessionUserId();
     if (!created_by) return { error: "User not found" };
 
-    if (!product.id) {
+    if (!product?.id) {
         const { data, error } = await supabase
             .from("products")
             .upsert(

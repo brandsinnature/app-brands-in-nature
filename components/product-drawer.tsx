@@ -39,10 +39,10 @@ export default function ProductDrawer({ open, product, setOpen }: Props) {
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerContent>
                 <div className="mx-auto w-full">
-                    <Show when={!!product?.gtin}>
+                    <Show when={!!code}>
                         <ProductCardView product={product!} />
                     </Show>
-                    <Show when={!product?.gtin}>
+                    <Show when={!code}>
                         <NoProductFoundView code={code} />
                     </Show>
                 </div>

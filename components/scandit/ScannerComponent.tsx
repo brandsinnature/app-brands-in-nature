@@ -86,13 +86,20 @@ export default function ScannerComponent() {
                     }
 
                     setBarcode(scannedJson);
-                    const { data } = await getProductByGtin(scannedCode);
+                    const { data, error: findError } = await getProductByGtin(
+                        scannedCode
+                    );
 
-                    setProduct(data);
-                    setOpen(true);
+                    if (!findError) {
+                        setProduct(data);
+                        setOpen(true);
 
-                    const { error } = await addProductToCart(data);
-                    if (error) toast.error(error);
+                        const { error } = await addProductToCart(data);
+                        if (error) toast.error(error);
+                    } else {
+                        await sdk.enableScanning(true);
+                        toast.error(findError);
+                    }
                 }
                 setLoading(false);
             },
