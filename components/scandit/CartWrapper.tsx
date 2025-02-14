@@ -1,7 +1,7 @@
 import ProductDrawer from "../product-drawer";
 import CartTrigger from "../cart-trigger";
 import { useEffect, useState } from "react";
-import { useSDK } from "./sdk";
+// import { useSDK } from "./sdk";
 import { ICart } from "@/utils/common.interface";
 import { getAllCartItems } from "@/data-access/product";
 
@@ -12,30 +12,30 @@ type Props = {
 };
 
 export default function CartWrapper({ open, setOpen, product }: Props) {
-    const { sdk } = useSDK();
+    // const { sdk } = useSDK();
 
     const [cartOpen, setCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState<ICart[]>([]);
 
     // useEffect to toggle scanning when product drawer is opened/closed
     useEffect(() => {
-        async function openHandler() {
-            if (!open) await sdk.enableScanning(true);
-        }
+        // async function openHandler() {
+        //     if (!open) await sdk.enableScanning(true);
+        // }
 
-        openHandler();
+        // openHandler();
         fetchCart();
-    }, [open, sdk]);
+    }, [open]);
 
     // useEffect to toggle scanning when cart drawer is opened/closed
-    useEffect(() => {
-        async function openHandler() {
-            if (cartOpen) await sdk.enableScanning(false);
-            else await sdk.enableScanning(true);
-        }
+    // useEffect(() => {
+    //     async function openHandler() {
+    //         if (cartOpen) await sdk.enableScanning(false);
+    //         else await sdk.enableScanning(true);
+    //     }
 
-        openHandler();
-    }, [cartOpen, sdk]);
+    //     openHandler();
+    // }, [cartOpen, sdk]);
 
     async function fetchCart() {
         const data = await getAllCartItems();

@@ -11,6 +11,83 @@ import { createClient } from "@/utils/supabase/server";
 import { jwtDecode } from "jwt-decode";
 import { getSessionUserId } from "./auth";
 
+export async function getProductByName(name: string) {
+    const supabase = createClient();
+
+    // Normalize the name for better searching
+    const normalizedName = name.toLowerCase().trim();
+
+    // First, try to find exact match in local database
+    const { data: existingProduct } = await supabase
+        .from("products")
+        .select("*")
+        .ilike("name", `%${normalizedName}%`)
+        .single();
+
+    if (existingProduct) {
+        return { data: existingProduct };
+    }
+
+    // If no local result, try external API
+    try {
+        const res = await fetch(
+            `https://example-product-api.com/search?name=${encodeURIComponent(normalizedName)}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.PRODUCT_SEARCH_API_TOKEN}`,
+                },
+            }
+        );
+
+        if (!res.ok) {
+            return {
+                error: res?.statusText || "Error searching for product",
+            };
+        }
+
+        const data = await res.json();
+
+        // Assuming the API returns an array of products
+        const products = data?.items ?? [];
+
+        // If no products found, return an error
+        if (products.length === 0) {
+            return {
+                error: `No product found for "${normalizedName}"`
+            };
+        }
+
+        // Take the first product
+        const product = products[0];
+
+        // Optionally, save found product to local database
+        const { error: upsertError } = await supabase
+            .from("products")
+            .upsert({ 
+                name: product.name, 
+                // Add other relevant fields
+                created_at: new Date().toISOString() 
+            })
+            .select();
+
+        if (upsertError) {
+            console.error("Error upserting product:", upsertError);
+        }
+
+        return {
+            data: product
+        };
+
+    } catch (error) {
+        console.error("Product search error:", error);
+        return {
+            error: "Unexpected error during product search",
+        };
+    }
+}
+
 export async function getProductByGtin(gtin: string) {
     const supabase = createClient();
 
