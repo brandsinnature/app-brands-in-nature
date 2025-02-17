@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 
-export async function POST(req: Request): Promise<Response> {  // ✅ Explicitly Promise<Response>
+export async function POST(req: Request): Promise<Response> {  // ✅ Explicit return type
   try {
     if (!req.body) {
       return new Response(JSON.stringify({
@@ -30,7 +30,6 @@ export async function POST(req: Request): Promise<Response> {  // ✅ Explicitly
     pythonProcess.stdin.write(body.frame);
     pythonProcess.stdin.end();
 
-    // Capture Python script output
     let stdoutData = '';
     let stderrData = '';
 
@@ -42,8 +41,7 @@ export async function POST(req: Request): Promise<Response> {  // ✅ Explicitly
       stderrData += data.toString();
     });
 
-    // ✅ Ensure `Promise<Response>` is returned properly
-    return new Promise((resolve) => {
+    return new Promise<Response>((resolve) => {  // ✅ Ensure the promise resolves to Response
       pythonProcess.on('close', (code) => {
         if (stderrData || code !== 0) {
           console.error('Scanner script error:', stderrData);
@@ -56,7 +54,7 @@ export async function POST(req: Request): Promise<Response> {  // ✅ Explicitly
           }));
         } else {
           try {
-            const scanResult = JSON.parse(stdoutData); // Parse Python output
+            const scanResult = JSON.parse(stdoutData);
             resolve(new Response(JSON.stringify(scanResult), {
               status: 200,
               headers: { 'Content-Type': 'application/json' }
