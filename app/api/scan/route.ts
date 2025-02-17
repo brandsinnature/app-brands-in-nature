@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<Response> {  // ✅ Explicitly Promise<Response>
   try {
     if (!req.body) {
       return new Response(JSON.stringify({
@@ -42,8 +42,8 @@ export async function POST(req: Request) {
       stderrData += data.toString();
     });
 
-    // Wait for the Python process to finish
-    return await new Promise((resolve) => {
+    // ✅ Ensure `Promise<Response>` is returned properly
+    return new Promise((resolve) => {
       pythonProcess.on('close', (code) => {
         if (stderrData || code !== 0) {
           console.error('Scanner script error:', stderrData);
