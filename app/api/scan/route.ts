@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request): Promise<Response> {
+export async function POST(req: Request): Promise<NextResponse> {
   try {
     if (!req.body) {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(req: Request): Promise<Response> {
       stderrData += data.toString();
     });
 
-    const response = await new Promise<Response>((resolve, reject) => {
+    const response = await new Promise<NextResponse>((resolve, reject) => {
       pythonProcess.on('close', (code) => {
         if (stderrData || code !== 0) {
           console.error('Scanner script error:', stderrData);
