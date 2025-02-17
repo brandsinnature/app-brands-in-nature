@@ -1,20 +1,21 @@
 import { spawn } from 'child_process';
+import { NextResponse } from 'next/server';
 
-export async function POST(req: Request): Promise<Response> {  // Add explicit return type
+export async function POST(req: Request): Promise<Response> {
   try {
     if (!req.body) {
-      return new Response(JSON.stringify({ success: false, error: 'Request body is null' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return NextResponse.json(
+        { success: false, error: 'Request body is null' },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
     if (body.frame.length < 20) {
-      return new Response(JSON.stringify({ success: false, error: 'Invalid frame data' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return NextResponse.json(
+        { success: false, error: 'Invalid frame data' },
+        { status: 200 }
+      );
     }
 
     const pythonProcess = spawn('python', ['scanner.py']);
@@ -32,45 +33,43 @@ export async function POST(req: Request): Promise<Response> {  // Add explicit r
       stderrData += data.toString();
     });
 
-    return await new Promise<Response>((resolve) => {  // Add explicit Promise type
+    const response = await new Promise<Response>((resolve, reject) => {
       pythonProcess.on('close', (code) => {
         if (stderrData || code !== 0) {
           console.error('Scanner script error:', stderrData);
-          resolve(new Response(JSON.stringify({ 
-            success: false, 
-            error: 'Scanner script execution failed' 
-          }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          }));
+          resolve(NextResponse.json(
+            { success: false, error: 'Scanner script execution failed' },
+            { status: 500 }
+          ));
         } else {
           try {
             const scanResult = JSON.parse(stdoutData);
-            resolve(new Response(JSON.stringify(scanResult), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            }));
+            resolve(NextResponse.json(scanResult, { status: 200 }));
           } catch (parseError) {
             console.error('Parsing error:', parseError);
-            resolve(new Response(JSON.stringify({ 
-              success: false, 
-              error: 'Invalid JSON from scanner script' 
-            }), {
-              status: 500,
-              headers: { 'Content-Type': 'application/json' }
-            }));
+            resolve(NextResponse.json(
+              { success: false, error: 'Invalid JSON from scanner script' },
+              { status: 500 }
+            ));
           }
         }
       });
+
+      pythonProcess.on('error', (error) => {
+        reject(error);
+      });
     });
+
+    return response;
+
   } catch (error) {
     console.error('Scanning error:', error);
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      },
+      { status: 500 }
+    );
   }
 }
