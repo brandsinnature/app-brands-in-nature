@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request): Promise<NextResponse> {
+export async function POST(req: Request): Promise<Response> {
   try {
     if (!req.body) {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       stderrData += data.toString();
     });
 
-    const response = await new Promise<NextResponse>((resolve, reject) => {
+    return await new Promise<Response>((resolve: (value: Response) => void) => {
       pythonProcess.on('close', (code) => {
         if (stderrData || code !== 0) {
           console.error('Scanner script error:', stderrData);
@@ -56,11 +56,12 @@ export async function POST(req: Request): Promise<NextResponse> {
       });
 
       pythonProcess.on('error', (error) => {
-        reject(error);
+        resolve(NextResponse.json(
+          { success: false, error: 'Python process error' },
+          { status: 500 }
+        ));
       });
     });
-
-    return response;
 
   } catch (error) {
     console.error('Scanning error:', error);
