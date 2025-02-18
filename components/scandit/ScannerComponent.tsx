@@ -80,7 +80,7 @@ export default function ScannerComponent() {
                 throw new Error("Failed to capture frame");
             }
 
-            const response = await fetch('/api/scan', {
+            const response = await fetch('https://your-python-server.com/scan', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
