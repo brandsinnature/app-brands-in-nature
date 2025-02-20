@@ -85,7 +85,7 @@ export default function ScannerComponent() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
+                 body: JSON.stringify({
                     frame: frameData
                 })
             });
