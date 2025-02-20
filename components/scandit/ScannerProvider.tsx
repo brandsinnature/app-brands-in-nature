@@ -1,4 +1,4 @@
-import { useSDK } from "@/components/scandit/sdk";
+// import { useSDK } from "@/components/scandit/sdk";
 import LoadingMessage from "@/components/scandit/LoadingMessage";
 import Show from "@/components/scandit/Show";
 import ScannerComponent from "@/components/scandit/ScannerComponent";
