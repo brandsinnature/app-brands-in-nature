@@ -80,7 +80,7 @@ export default function ScannerComponent() {
                 throw new Error("Failed to capture frame");
             }
 
-            const response = await fetch('https://your-python-server.com/scan', {
+            const response = await fetch("https://scanner-service-oe4l.onrender.com", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
