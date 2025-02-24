@@ -26,9 +26,13 @@ interface Detection {
     };
 }
 
+interface Data{
+  detections: Detection[];
+}
+
 interface ScannerResult {
     success: boolean;
-    detections: Detection[];
+    data: string;
     error: string | null;
 }
 
@@ -97,6 +101,8 @@ export default function ScannerComponent() {
             }
 
             const result: ScannerResult = await response.json();
+
+            console.log(result);
 
             if (result.success === false) {
                 console.log(result.error)
@@ -196,14 +202,18 @@ export default function ScannerComponent() {
             return;
         }
 
-        if (result.detections.length === 0) {
+        const data: Data = JSON.parse(result.data)
+
+        const products = data.detections;
+        
+        if (products.length === 0) {
             toast.error("No objects detected");
             setLoading(false);
             await resumeScanning();
             return;
         }
 
-        const bestDetection = result.detections.reduce((prev, current) => 
+        const bestDetection = products.reduce((prev, current) => 
             (prev.confidence > current.confidence) ? prev : current
         );
 
