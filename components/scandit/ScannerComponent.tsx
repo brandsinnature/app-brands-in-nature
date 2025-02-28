@@ -14,16 +14,10 @@ import DepositWrapper from "./DepositWrapper";
 
 interface Detection {
     id: string;
-    class: string;
-    confidence: number;
     product_name: string;
-    product_code: string;
-    bounding_box: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
+    product_company: string;
+    material: string;
+    confidence: number;
 }
 
 interface Data{
@@ -226,8 +220,8 @@ export default function ScannerComponent() {
 
         if (mode === "deposit") {
             const { error, data } = await getRetailerByUpi({
-                pa: bestDetection.product_code,
-                pn: bestDetection.class,
+                pa: bestDetection.product_name,
+                pn: bestDetection.product_company,
                 lat,
                 lng,
                 acc,
@@ -240,8 +234,8 @@ export default function ScannerComponent() {
             }
 
             setProduct({
-                pa: bestDetection.product_code,
-                pn: bestDetection.class,
+                pa: bestDetection.product_name,
+                pn: bestDetection.product_company,
                 lat,
                 lng,
                 acc,
@@ -251,6 +245,8 @@ export default function ScannerComponent() {
             const { data, error: findError } = await getProductByName(
                 bestDetection.product_name
             );
+
+            toast.info(`Product: ${bestDetection.product_name}`);
 
             if (!findError) {
                 setProduct(data);
