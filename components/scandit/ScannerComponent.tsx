@@ -13,9 +13,8 @@ import { useLocation } from "@/hooks/useLocation";
 import DepositWrapper from "./DepositWrapper";
 
 interface Detection {
-    id: string;
-    product_name: string;
-    product_company: string;
+    brand: string; 
+    name:string; 
     material: string;
     confidence: number;
 }
@@ -103,12 +102,12 @@ export default function ScannerComponent() {
                 return;
             }
 
+            setIsScanning(false);
+
             await processDetectionResults(result);
         } catch (error) {
             setShouldScan(false);
             console.error("Scanner error:", error);
-        } finally {
-            setIsScanning(false);
         }
     };
 
@@ -220,8 +219,8 @@ export default function ScannerComponent() {
 
         if (mode === "deposit") {
             const { error, data } = await getRetailerByUpi({
-                pa: bestDetection.product_name,
-                pn: bestDetection.product_company,
+                pa: bestDetection.name,
+                pn: bestDetection.brand,
                 lat,
                 lng,
                 acc,
@@ -234,8 +233,8 @@ export default function ScannerComponent() {
             }
 
             setProduct({
-                pa: bestDetection.product_name,
-                pn: bestDetection.product_company,
+                pa: bestDetection.name,
+                pn: bestDetection.brand,
                 lat,
                 lng,
                 acc,
@@ -243,10 +242,10 @@ export default function ScannerComponent() {
             });
         } else {
             const { data, error: findError } = await getProductByName(
-                bestDetection.product_name
+                bestDetection.name
             );
 
-            toast.info(`Product: ${bestDetection.product_name}`);
+            toast.info(`Product: ${bestDetection.name}`);
 
             if (!findError) {
                 setProduct(data);
