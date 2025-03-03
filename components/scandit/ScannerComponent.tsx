@@ -14,8 +14,11 @@ import DepositWrapper from "./DepositWrapper";
 
 interface Detection {
     brand: string; 
-    name:string; 
+    name: string; 
     material: string;
+    description: string;
+    net_weight: number;
+    measurement_unit: string;
     confidence: number;
 }
 
@@ -41,7 +44,7 @@ export default function ScannerComponent() {
     const [mode, _] = useQueryState("mode", parseAsString.withDefault("cart"));
 
     const videoRef = useRef<HTMLVideoElement>(null);
-
+    
     const captureFrame = async (): Promise<string | null> => {
         try {
           if (!videoRef.current) {
@@ -67,7 +70,9 @@ export default function ScannerComponent() {
         // If already scanning or scanning is paused, skip
         console.log("Scanning...");
 
-        if (isScanning || !shouldScan) return;
+        console.log(isScanning, shouldScan);
+
+        // if (isScanning || !shouldScan) return;
 
         try {
             setIsScanning(true);
@@ -76,8 +81,6 @@ export default function ScannerComponent() {
             if (!frameData) {
                 throw new Error("Failed to capture frame");
             }
-
-            console.log("Hello")
 
             const response = await fetch("https://scanner-service-oe4l.onrender.com/scan", {
                 method: 'POST',
@@ -94,8 +97,6 @@ export default function ScannerComponent() {
             }
 
             const result: ScannerResult = await response.json();
-
-            console.log(result);
 
             if (result.success === false) {
                 console.log(result.error)
@@ -177,12 +178,29 @@ export default function ScannerComponent() {
 
     const resumeScanning = useCallback(async () => {
         await enableCamera(true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
         setShouldScan(true);
         // Trigger a new scan if not already scanning
         if (!isScanning) {
             connectToScanner();
         }
     }, [isScanning]);
+
+    // Event listener for resume-scanning event
+    useEffect(() => {
+      const handleResumeScanning = () => {
+        console.log("Resume scanning event received");
+        resumeScanning();
+      };
+
+      // Add the global event listener
+      window.addEventListener('resume-scanning', handleResumeScanning);
+
+      // Clean up the event listener when component unmounts
+      return () => {
+        window.removeEventListener('resume-scanning', handleResumeScanning);
+      };
+    }, [resumeScanning]);
 
     const processDetectionResults = async (result: ScannerResult) => {
         await pauseScanning();
@@ -241,19 +259,26 @@ export default function ScannerComponent() {
                 id: data.id
             });
         } else {
-            const { data, error: findError } = await getProductByName(
-                bestDetection.name
-            );
+            // const { data, error: findError } = await getProductByName(
+            //     bestDetection.name
+            // );
 
-            toast.info(`Product: ${bestDetection.name}`);
-
-            if (!findError) {
-                setProduct(data);
-                const { error } = await addProductToCart(data);
-                if (error) toast.error(error);
-            } else {
-                toast.error(findError);
+            console.log("Best detection: ", bestDetection);
+            
+            const product = {
+                name: bestDetection.name,
+                brand: bestDetection.brand,
+                material: bestDetection.material, 
+                description: bestDetection.description,
+                weights_and_measures: {
+                    net_weight: bestDetection.net_weight,
+                    measurement_unit: bestDetection.measurement_unit
+                }
             }
+
+            setProduct(product);
+            const { error } = await addProductToCart(product);
+            if (error) console.error(`Here: ${error}`);
         }
 
         setOpen(true);
@@ -306,140 +331,3 @@ export default function ScannerComponent() {
     );
 }
 
-// import { useEffect, useState, useCallback, useMemo } from "react";
-// import {
-//     addProductToCart,
-//     getProductByGtin,
-//     getRetailerByUpi,
-// } from "@/data-access/product";
-// import { useSDK } from "./sdk";
-// import { useStore } from "./store";
-// import { toast } from "sonner";
-// import {
-//     BarcodeCapture,
-//     BarcodeCaptureListener,
-//     BarcodeCaptureSession,
-// } from "scandit-web-datacapture-barcode";
-// import Show from "./Show";
-// import CartWrapper from "./CartWrapper";
-// import { parseAsString, useQueryState } from "next-usequerystate";
-// import { useLocation } from "@/hooks/useLocation";
-// import DepositWrapper from "./DepositWrapper";
-
-// export default function ScannerComponent() {
-//     const { sdk } = useSDK();
-//     const { setBarcode, keepCameraOn, setLoading } = useStore();
-//     const [open, setOpen] = useState(false);
-//     const [product, setProduct] = useState<any>(null);
-//     const { lat, lng, acc, getCurrentLocation } = useLocation();
-
-//     const [mode, _] = useQueryState("mode", parseAsString.withDefault("cart"));
-
-//     useEffect(() => {
-//         getCurrentLocation();
-//         // eslint-disable-next-line react-hooks/exhaustive-deps
-//     }, []);
-
-//     const shouldKeepCameraOn = useCallback(async () => {
-//         if (!keepCameraOn) await sdk.enableCamera(false);
-//     }, [sdk, keepCameraOn]);
-
-//     const onScan = useMemo<BarcodeCaptureListener>(
-//         () => ({
-//             didScan: async (
-//                 _: BarcodeCapture,
-//                 session: BarcodeCaptureSession
-//             ) => {
-//                 setLoading(true);
-//                 if (session.newlyRecognizedBarcodes.length > 0) {
-//                     const scannedJson = session.newlyRecognizedBarcodes[0];
-
-//                     await shouldKeepCameraOn();
-//                     await sdk.enableScanning(false);
-
-//                     const scannedCode = `${scannedJson.data}`;
-
-//                     // Check if scanned code is a number
-//                     if (isNaN(Number(scannedCode))) {
-//                         if (mode === "cart") {
-//                             toast.error("Invalid barcode");
-//                             await sdk.enableScanning(true);
-//                             return setLoading(false);
-//                         }
-
-//                         const urlObj = new URL(`${scannedJson.data}`);
-//                         const searchParams = new URLSearchParams(urlObj.search);
-
-//                         const pa = searchParams.get("pa");
-//                         const pn = searchParams.get("pn");
-
-//                         const { error, data } = await getRetailerByUpi({
-//                             pa,
-//                             pn,
-//                             lat,
-//                             lng,
-//                             acc,
-//                         });
-
-//                         if (error || !data) {
-//                             await sdk.enableScanning(true);
-//                             setLoading(false);
-//                             return toast.error(
-//                                 error ?? "Error fetching retailer"
-//                             );
-//                         }
-
-//                         setProduct({ pa, pn, lat, lng, acc, id: data.id });
-//                         return setOpen(true);
-//                     }
-
-//                     setBarcode(scannedJson);
-//                     const { data, error: findError } = await getProductByGtin(
-//                         scannedCode
-//                     );
-
-//                     if (!findError) {
-//                         setProduct(data);
-//                         setOpen(true);
-
-//                         const { error } = await addProductToCart(data);
-//                         if (error) toast.error(error);
-//                     } else {
-//                         await sdk.enableScanning(true);
-//                         toast.error(findError);
-//                     }
-//                 }
-//                 setLoading(false);
-//             },
-//         }),
-//         [setLoading, shouldKeepCameraOn, sdk, setBarcode, mode, lat, lng, acc]
-//     );
-
-//     useEffect(() => {
-//         sdk.addBarcodeCaptureListener(onScan);
-//         return () => {
-//             sdk.removeBarcodeCaptureListener(onScan);
-//         };
-//     }, [sdk, onScan]);
-
-//     // Reset product state when mode changes
-//     useEffect(() => {
-//         setProduct(null);
-//     }, [mode]);
-
-//     return (
-//         <>
-//             <Show when={mode === "cart"}>
-//                 <CartWrapper open={open} setOpen={setOpen} product={product} />
-//             </Show>
-
-//             <Show when={mode === "deposit"}>
-//                 <DepositWrapper
-//                     open={open}
-//                     setOpen={setOpen}
-//                     retailer={product}
-//                 />
-//             </Show>
-//         </>
-//     );
-// }

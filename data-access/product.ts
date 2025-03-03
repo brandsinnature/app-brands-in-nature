@@ -226,72 +226,72 @@ export async function getMyProducts() {
     return data;
 }
 
-export async function addProductToCart(product: IProduct) {
-    const supabase = createClient();
+// export async function addProductToCart(product: IProduct) {
+//     const supabase = createClient();
 
-    const created_by = await getSessionUserId();
-    if (!created_by) return { error: "User not found" };
+//     const created_by = await getSessionUserId();
+//     if (!created_by) return { error: "User not found" };
 
-    if (!product?.id) {
-        const { data, error } = await supabase
-            .from("products")
-            .upsert(
-                {
-                    gtin: product.gtin,
-                    brand: product.brand,
-                    name: product.name,
-                    category: product.category,
-                    images: product.images,
-                    sub_category: product.sub_category,
-                    description: product.description,
-                    weights_and_measures: product.weights_and_measures,
-                    created_by,
-                },
-                { onConflict: "gtin" }
-            )
-            .select("id")
-            .single();
+//     if (!product?.id) {
+//         const { data, error } = await supabase
+//             .from("products")
+//             .upsert(
+//                 {
+//                     gtin: product.gtin,
+//                     brand: product.brand,
+//                     name: product.name,
+//                     category: product.category,
+//                     images: product.images,
+//                     sub_category: product.sub_category,
+//                     description: product.description,
+//                     weights_and_measures: product.weights_and_measures,
+//                     created_by,
+//                 },
+//                 { onConflict: "gtin" }
+//             )
+//             .select("id")
+//             .single();
 
-        product.id = data?.id;
+//         product.id = data?.id;
 
-        if (error) return { error: error.message };
-    }
+//         if (error) return { error: error.message };
+//     }
 
-    const { data, error } = await supabase
-        .from("cart")
-        .select("*")
-        .eq("product_id", product.id)
-        .eq("created_by", created_by)
-        .eq("status", "cart")
-        .single();
+//     const { data, error } = await supabase
+//         .from("cart")
+//         .select("*")
+//         .eq("product_id", product.id)
+//         .eq("created_by", created_by)
+//         .eq("status", "cart")
+//         .single();
 
-    if (data?.id && !error) {
-        await supabase.rpc("increment_quantity", {
-            p_product_id: product.id,
-            p_created_by: created_by,
-            p_status: "cart",
-        });
-    } else {
-        const { error } = await supabase
-            .from("cart")
-            .insert({
-                product_id: product.id,
-                created_by,
-                quantity: 1,
-                status: "cart",
-            })
-            .select("*");
+//     if (data?.id && !error) {
+//         await supabase.rpc("increment_quantity", {
+//             p_product_id: product.id,
+//             p_created_by: created_by,
+//             p_status: "cart",
+//         });
+//     } else {
+//         const { error } = await supabase
+//             .from("cart")
+//             .insert({
+//                 product_id: product.id,
+//                 created_by,
+//                 quantity: 1,
+//                 status: "cart",
+//             })
+//             .select("*");
 
-        if (error) return { error: error.message };
-    }
+//         if (error) return { error: error.message };
+//     }
 
-    await supabase.from("cart_history").insert({
-        product_id: product.id,
-        created_by,
-    });
+//     await supabase.from("cart_history").insert({
+//         product_id: product.id,
+//         created_by,
+//     });
 
-    return { data };
-}
+//     return { data };
+// }
 
 export async function getAllCartItems() {
     const supabase = createClient();
@@ -311,6 +311,98 @@ export async function getAllCartItems() {
 
     return data;
 }
+
+interface CartProduct {
+    id?: string;
+    brand: string;
+    name: string;
+    material: string;
+}
+
+interface CartResponse {
+    error?: string;
+    success?: boolean;
+}
+
+export async function addProductToCart(product: CartProduct): Promise<CartResponse> {
+        const supabase = createClient();
+
+        console.log("product", product);
+
+        const created_by = await getSessionUserId();
+        if (!created_by) return { error: "User not found" };
+
+        // Step 1: Check if the product exists based on brand, name, and material
+        let { data: existingProduct, error: productError } = await supabase
+                .from("products")
+                .select("id")
+                .eq("brand", product.brand)
+                .eq("name", product.name)
+                .single();
+
+        if (productError && productError.code !== "PGRST116") {
+                return { error: productError.message };
+        }
+
+        // Step 2: If the product doesn't exist, insert it
+        if (!existingProduct) {
+                const { data, error } = await supabase
+                        .from("products")
+                        .insert({
+                                brand: product.brand,
+                                name: product.name,
+                                created_by,
+                        })
+                        .select("id")
+                        .single();
+
+                if (error) return { error: error.message };
+                existingProduct = data;
+        }
+
+        const productId = existingProduct.id;
+
+        // Step 3: Check if the product is already in the cart
+        const { data: cartItem, error: cartError } = await supabase
+                .from("cart")
+                .select("id, quantity")
+                .eq("product_id", productId)
+                .eq("created_by", created_by)
+                .eq("status", "cart")
+                .single();
+
+        if (cartError && cartError.code !== "PGRST116") {
+                return { error: cartError.message };
+        }
+
+        // Step 4: If product is in cart, increment quantity; otherwise, insert new cart entry
+        if (cartItem) {
+                await supabase
+                        .from("cart")
+                        .update({ quantity: cartItem.quantity + 1 })
+                        .eq("id", cartItem.id);
+        } else {
+                const { error } = await supabase
+                        .from("cart")
+                        .insert({
+                                product_id: productId,
+                                created_by,
+                                quantity: 1,
+                                status: "cart",
+                        });
+
+                if (error) return { error: error.message };
+        }
+
+        // Step 5: Log action in cart history
+        await supabase.from("cart_history").insert({
+                product_id: productId,
+                created_by,
+        });
+
+        return { success: true };
+}
+
 
 export async function removeProductFromCart(cartId: string) {
     const supabase = createClient();

@@ -39,12 +39,12 @@ export default function ProductDrawer({ open, product, setOpen }: Props) {
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerContent>
                 <div className="mx-auto w-full">
-                    <Show when={!!code}>
+                    <Show when={!code}>
                         <ProductCardView product={product!} />
                     </Show>
-                    <Show when={!code}>
+                    {/* <Show when={!code}>
                         <NoProductFoundView code={code} />
-                    </Show>
+                    </Show> */}
                 </div>
             </DrawerContent>
         </Drawer>
@@ -83,6 +83,7 @@ const ProductCardView = ({ product }: { product: CompleteProduct }) => {
                 <DrawerDescription asChild>
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                         <Badge variant="outline">Brand: {product.brand}</Badge>
+                        <Badge variant="outline">Material: {product.material} </Badge>
                         {product?.weights_and_measures?.net_weight && (
                             <Badge variant="outline">
                                 Net weight:{" "}
@@ -100,6 +101,9 @@ const ProductCardView = ({ product }: { product: CompleteProduct }) => {
                         variant="outline"
                         type="button"
                         className="rounded-full w-full"
+                        onClick={() => {
+                            window.dispatchEvent(new CustomEvent('resume-scanning'));
+                        }}
                     >
                         Continue scanning
                     </Button>

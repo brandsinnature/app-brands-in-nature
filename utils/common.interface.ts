@@ -2,6 +2,7 @@ import { JwtPayload } from "jwt-decode";
 
 export interface CompleteProduct {
     brand: string;
+    material: string;
     name: string;
     description: string;
     derived_description: string;
