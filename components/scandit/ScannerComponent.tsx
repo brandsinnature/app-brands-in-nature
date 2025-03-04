@@ -11,6 +11,7 @@ import CartWrapper from "./CartWrapper";
 import { parseAsString, useQueryState } from "next-usequerystate";
 import { useLocation } from "@/hooks/useLocation";
 import DepositWrapper from "./DepositWrapper";
+import { set } from "date-fns";
 
 interface Detection {
     brand: string; 
@@ -66,13 +67,10 @@ export default function ScannerComponent() {
         }
       };
 
-    const connectToScanner = async () => {
-        // If already scanning or scanning is paused, skip
-        console.log("Scanning...");
+    const connectToScanner = async (forceResume: boolean) => {
+        if (!forceResume && (isScanning || !shouldScan)) return;
 
-        console.log(isScanning, shouldScan);
-
-        // if (isScanning || !shouldScan) return;
+        toast.info("Scanning...");
 
         try {
             setIsScanning(true);
@@ -176,22 +174,23 @@ export default function ScannerComponent() {
         if (!keepCameraOn) await enableCamera(false);
     }, [keepCameraOn]);
 
-    const resumeScanning = useCallback(async () => {
-        await enableCamera(true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setShouldScan(true);
-        // Trigger a new scan if not already scanning
-        if (!isScanning) {
-            connectToScanner();
-        }
+    const resumeScanning = useCallback(async (forceResume = false) => {
+      await enableCamera(true);
+      toast.info("Scanning starting in 3 seconds...");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setShouldScan(true);
+      // Trigger a new scan if not already scanning
+      if (!isScanning) {
+        connectToScanner(forceResume);
+      }
     }, [isScanning]);
 
     // Event listener for resume-scanning event
     useEffect(() => {
-      const handleResumeScanning = () => {
-        console.log("Resume scanning event received");
-        resumeScanning();
-      };
+      const handleResumeScanning = async () => {
+            console.log("Resume scanning event received");
+            await resumeScanning(true);
+          };
 
       // Add the global event listener
       window.addEventListener('resume-scanning', handleResumeScanning);
