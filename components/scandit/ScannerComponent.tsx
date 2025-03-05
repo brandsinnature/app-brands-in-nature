@@ -23,6 +23,11 @@ interface Detection {
     confidence: number;
 }
 
+interface UPI_Data {
+    upi_id: string;
+    name: string; 
+}
+
 interface Data{
   detections: Detection[];
 }
@@ -30,6 +35,7 @@ interface Data{
 interface ScannerResult {
     success: boolean;
     data: string;
+    deposit_data: string;
     error: string | null;
 }
 
@@ -42,7 +48,7 @@ export default function ScannerComponent() {
     const [shouldScan, setShouldScan] = useState(true);
     const [stream, setStream] = useState<MediaStream | null>(null);
 
-    const [mode, _] = useQueryState("mode", parseAsString.withDefault("cart"));
+    const [mode, setMode] = useQueryState("mode", parseAsString.withDefault("cart"));
 
     const videoRef = useRef<HTMLVideoElement>(null);
     
@@ -68,7 +74,8 @@ export default function ScannerComponent() {
       };
 
     const connectToScanner = async (forceResume: boolean) => {
-        if (!forceResume && (isScanning || !shouldScan)) return;
+
+        if (!(mode==="deposit") && !forceResume && (isScanning || !shouldScan)) return;
 
         toast.info("Scanning...");
 
@@ -80,15 +87,29 @@ export default function ScannerComponent() {
                 throw new Error("Failed to capture frame");
             }
 
-            const response = await fetch("https://scanner-service-oe4l.onrender.com/scan", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                 body: JSON.stringify({
-                    frame: frameData
-                })
-            });
+            var response = null;
+
+            if(mode === "deposit") {
+              response = await fetch("https://scanner-service-oe4l.onrender.com/scan-deposit", {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      frame: frameData
+                  })
+              });
+            } else {
+              response = await fetch("https://scanner-service-oe4l.onrender.com/scan", {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      frame: frameData
+                  })
+              });
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -212,55 +233,58 @@ export default function ScannerComponent() {
             return;
         }
 
-        const data: Data = JSON.parse(result.data)
-
-        const products = data.detections;
-        
-        if (products.length === 0) {
-            toast.error("No objects detected");
-            setLoading(false);
-            await resumeScanning();
-            return;
-        }
-
-        const bestDetection = products.reduce((prev, current) => 
-            (prev.confidence > current.confidence) ? prev : current
-        );
-
-        if (bestDetection.confidence < 0.7) {
-            toast.error("Detection confidence too low");
-            setLoading(false);
-            await resumeScanning();
-            return;
-        }
-
         if (mode === "deposit") {
-            const { error, data } = await getRetailerByUpi({
-                pa: bestDetection.name,
-                pn: bestDetection.brand,
-                lat,
-                lng,
-                acc,
+            const retailer: UPI_Data = JSON.parse(result.deposit_data);
+
+            console.log("Retailer: ", retailer);
+
+            const { error, data: retailerData } = await getRetailerByUpi({
+                pa: retailer?.upi_id,
+                pn: retailer?.name,
+                lat: lat,
+                lng: lng,
+                acc: acc,
             });
 
-            if (error || !data) {
+            if (error || !retailerData) {
                 setLoading(false);
-                await resumeScanning();
                 return toast.error(error ?? "Error fetching retailer");
             }
 
             setProduct({
-                pa: bestDetection.name,
-                pn: bestDetection.brand,
+                pa: retailer?.upi_id,
+                pn: retailer?.name,
                 lat,
                 lng,
                 acc,
-                id: data.id
+                id: retailerData.id
             });
         } else {
             // const { data, error: findError } = await getProductByName(
             //     bestDetection.name
             // );
+
+            const parsedData: Data = JSON.parse(result.data);
+
+            const products = parsedData.detections;
+        
+            if (products.length === 0) {
+                toast.error("No objects detected");
+                setLoading(false);
+                await resumeScanning();
+                return;
+            }
+
+            const bestDetection = products.reduce((prev, current) => 
+                (prev.confidence > current.confidence) ? prev : current
+            );
+
+            if (bestDetection.confidence < 0.7) {
+                toast.error("Detection confidence too low");
+                setLoading(false);
+                await resumeScanning();
+                return;
+            }
 
             console.log("Best detection: ", bestDetection);
             

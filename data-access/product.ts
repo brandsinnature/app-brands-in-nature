@@ -436,6 +436,7 @@ export async function getRetailerByUpi({
 }: IGetRetailer) {
     const supabase = createClient();
 
+    
     if (!pa) return { error: "Invalid UPI" };
     if (!pn) return { error: "Invalid Name" };
     if (!lat || !lng || !acc) return { error: "Invalid location" };
@@ -460,7 +461,9 @@ export async function getRetailerByUpi({
         .select("id")
         .single();
 
-    if (retailerError) return { error: retailerError.message };
+    if (retailerError) {
+        console.log("Retailer error:", retailerError);
+        return { error: retailerError.message };}
 
     return { data: retailer };
 }
