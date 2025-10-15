@@ -9,6 +9,8 @@ import { redirect } from "next/navigation";
 export async function login(loginForm: ILoginForm) {
     const client = createClient();
 
+    console.log(`Redirect link: ${process.env.META_URL}/scan`)
+
     const { error } = await client.auth.signInWithOtp({
         ...loginForm,
         options: {

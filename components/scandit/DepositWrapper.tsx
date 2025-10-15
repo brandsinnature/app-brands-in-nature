@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import RetailerDrawer from "../drawers/retailer-drawer";
-import { useSDK } from "./sdk";
+// import { useSDK } from "./sdk";
 import { countCartItems } from "@/data-access/product";
 import { IGetRetailer } from "@/utils/common.interface";
 import { Button } from "../ui/button";
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function DepositWrapper({ open, setOpen, retailer }: Props) {
-    const { sdk } = useSDK();
+    // const { sdk } = useSDK();
 
     const [count, setCount] = useState(0);
 
@@ -23,13 +23,13 @@ export default function DepositWrapper({ open, setOpen, retailer }: Props) {
         parseAsString.withDefault("cart")
     );
 
-    useEffect(() => {
-        async function openHandler() {
-            if (!open) await sdk.enableScanning(true);
-        }
+    // useEffect(() => {
+    //     async function openHandler() {
+    //         if (!open) await sdk.enableScanning(true);
+    //     }
 
-        openHandler();
-    }, [open, sdk]);
+    //     openHandler();
+    // }, [open, sdk]);
 
     const getCartItemsCount = useCallback(async () => {
         const count = await countCartItems();
