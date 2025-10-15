@@ -31,8 +31,6 @@ export default function CartEditTrigger({
 
     useEffect(() => {
         setIsMounted(true);
-
-        () => router.refresh();
     }, []);
 
     if (!isMounted) return null;
