@@ -100,15 +100,39 @@ export default function ScannerComponent() {
                   })
               });
             } else {
-              response = await fetch("https://scanner-service-oe4l.onrender.com/scan", {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                      frame: frameData
-                  })
-              });
+              // For cart mode, try Moondream first, then fallback to existing scanner
+              try {
+                  // Try Moondream API first
+                  response = await fetch("/api/moondream/scan", {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                          frame: frameData
+                      })
+                  });
+
+                  if (response.ok) {
+                      console.log("Moondream scan successful");
+                  } else {
+                      throw new Error(`Moondream API error: ${response.status}`);
+                  }
+              } catch (moondreamError) {
+                  console.log("Moondream failed, falling back to scanner service:", moondreamError);
+                  
+                  // Fallback to existing scanner service
+                  response = await fetch("https://scanner-service-oe4l.onrender.com/scan", {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                          frame: frameData
+                      })
+                  });
+                  console.log("Fallback scanner service used");
+              }
             }
 
             if (!response.ok) {
