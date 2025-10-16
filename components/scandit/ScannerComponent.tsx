@@ -122,6 +122,9 @@ export default function ScannerComponent() {
           if (response.ok) {
             console.log("Moondream scan successful");
           } else {
+            // If Moondream fails, throw error to trigger fallback
+            const errorText = await response.text();
+            console.error("Moondream API error:", response.status, errorText);
             throw new Error(`Moondream API error: ${response.status}`);
           }
         } catch (moondreamError) {
@@ -148,10 +151,20 @@ export default function ScannerComponent() {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Scanner service error:", response.status, errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status} - ${errorText}`
+        );
       }
 
-      const result: ScannerResult = await response.json();
+      let result: ScannerResult;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error("Failed to parse scanner response as JSON:", jsonError);
+        throw new Error("Invalid response format from scanner service");
+      }
 
       if (result.success === false) {
         console.log(result.error);
@@ -164,6 +177,19 @@ export default function ScannerComponent() {
     } catch (error) {
       setShouldScan(false);
       console.error("Scanner error:", error);
+
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        if (error.message.includes("Moondream API error")) {
+          toast.error("AI scanning temporarily unavailable. Please try again.");
+        } else if (error.message.includes("Invalid response format")) {
+          toast.error("Scanner service error. Please try again.");
+        } else {
+          toast.error("Scanning failed. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
