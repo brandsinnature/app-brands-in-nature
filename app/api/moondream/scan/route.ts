@@ -1,5 +1,95 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Fallback function to try other APIs when Moondream fails
+async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKey2?: string, geminiApiKey3?: string, openaiApiKey?: string) {
+  const apis = [
+    { name: "Gemini", key: geminiApiKey, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
+    { name: "Gemini2", key: geminiApiKey2, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
+    { name: "Gemini3", key: geminiApiKey3, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
+    { name: "OpenAI", key: openaiApiKey, endpoint: "https://api.openai.com/v1/chat/completions" }
+  ];
+
+  for (const api of apis) {
+    if (!api.key) continue;
+    
+    try {
+      console.log(`Trying ${api.name} API...`);
+      
+      if (api.name.startsWith("Gemini")) {
+        const response = await fetch(`${api.endpoint}?key=${api.key}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values.",
+                inline_data: { mime_type: "image/jpeg", data: frame.split(',')[1] }
+              }]
+            }]
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const content = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (content) {
+            console.log(`${api.name} API success`);
+            return NextResponse.json({
+              success: true,
+              data: JSON.stringify({
+                detections: [JSON.parse(content)]
+              }),
+              error: null,
+            });
+          }
+        }
+      } else if (api.name === "OpenAI") {
+        const response = await fetch(api.endpoint, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${api.key}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "gpt-4-vision-preview",
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values." },
+                { type: "image_url", image_url: { url: frame } }
+              ]
+            }]
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const content = result.choices?.[0]?.message?.content;
+          if (content) {
+            console.log(`${api.name} API success`);
+            return NextResponse.json({
+              success: true,
+              data: JSON.stringify({
+                detections: [JSON.parse(content)]
+              }),
+              error: null,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`${api.name} API error:`, error);
+      continue;
+    }
+  }
+  
+  // If all APIs fail, return error
+  return NextResponse.json(
+    { success: false, error: "All AI APIs failed" },
+    { status: 500 }
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { frame } = await request.json();
@@ -12,11 +102,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.MOONDREAM_API_KEY;
-    if (!apiKey) {
-      console.error("Moondream API: API key not configured");
+    // Try Moondream first, then fallback to other APIs
+    const moondreamApiKey = process.env.MOONDREAM_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const geminiApiKey2 = process.env.GEMINI_API_KEY2;
+    const geminiApiKey3 = process.env.GEMINI_API_KEY3;
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+
+    if (!moondreamApiKey && !geminiApiKey && !geminiApiKey2 && !geminiApiKey3 && !openaiApiKey) {
+      console.error("Moondream API: No API keys configured");
       return NextResponse.json(
-        { success: false, error: "Moondream API key not configured" },
+        { success: false, error: "No API keys configured" },
         { status: 500 }
       );
     }
@@ -30,7 +126,7 @@ export async function POST(request: NextRequest) {
     const queryResponse = await fetch("https://api.moondream.ai/v1/query", {
       method: "POST",
       headers: {
-        "X-Moondream-Auth": apiKey,
+        "X-Moondream-Auth": moondreamApiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -49,13 +145,10 @@ export async function POST(request: NextRequest) {
         queryResponse.status,
         errorText
       );
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Moondream Query API error: ${queryResponse.status} - ${errorText}`,
-        },
-        { status: 500 }
-      );
+      
+      // Try fallback APIs if Moondream fails
+      console.log("Moondream failed, trying fallback APIs...");
+      return await tryFallbackAPIs(frame, geminiApiKey, geminiApiKey2, geminiApiKey3, openaiApiKey);
     }
 
     const queryResult = await queryResponse.json();
@@ -92,7 +185,7 @@ export async function POST(request: NextRequest) {
     const detectResponse = await fetch("https://api.moondream.ai/v1/detect", {
       method: "POST",
       headers: {
-        "X-Moondream-Auth": apiKey,
+        "X-Moondream-Auth": moondreamApiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -145,7 +238,7 @@ Return only valid JSON with these exact keys. If you cannot determine a value, u
     const detailResponse = await fetch("https://api.moondream.ai/v1/query", {
       method: "POST",
       headers: {
-        "X-Moondream-Auth": apiKey,
+        "X-Moondream-Auth": moondreamApiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
