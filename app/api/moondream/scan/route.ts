@@ -1,34 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Fallback function to try other APIs when Moondream fails
-async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKey2?: string, geminiApiKey3?: string, openaiApiKey?: string) {
+async function tryFallbackAPIs(
+  frame: string,
+  geminiApiKey?: string,
+  geminiApiKey2?: string,
+  geminiApiKey3?: string,
+  openaiApiKey?: string
+) {
   const apis = [
-    { name: "Gemini", key: geminiApiKey, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
-    { name: "Gemini2", key: geminiApiKey2, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
-    { name: "Gemini3", key: geminiApiKey3, endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
-    { name: "OpenAI", key: openaiApiKey, endpoint: "https://api.openai.com/v1/chat/completions" }
+    {
+      name: "Gemini",
+      key: geminiApiKey,
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    },
+    {
+      name: "Gemini2",
+      key: geminiApiKey2,
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    },
+    {
+      name: "Gemini3",
+      key: geminiApiKey3,
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    },
+    {
+      name: "OpenAI",
+      key: openaiApiKey,
+      endpoint: "https://api.openai.com/v1/chat/completions",
+    },
   ];
 
   for (const api of apis) {
     if (!api.key) continue;
-    
+
     try {
       console.log(`Trying ${api.name} API...`);
-      
+
       if (api.name.startsWith("Gemini")) {
         const response = await fetch(`${api.endpoint}?key=${api.key}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values.",
-                inline_data: { mime_type: "image/jpeg", data: frame.split(',')[1] }
-              }]
-            }]
-          })
+            contents: [
+              {
+                parts: [
+                  {
+                    text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values.",
+                    inline_data: {
+                      mime_type: "image/jpeg",
+                      data: frame.split(",")[1],
+                    },
+                  },
+                ],
+              },
+            ],
+          }),
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           const content = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -37,7 +69,7 @@ async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKe
             return NextResponse.json({
               success: true,
               data: JSON.stringify({
-                detections: [JSON.parse(content)]
+                detections: [JSON.parse(content)],
               }),
               error: null,
             });
@@ -47,21 +79,26 @@ async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKe
         const response = await fetch(api.endpoint, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${api.key}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${api.key}`,
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             model: "gpt-4-vision-preview",
-            messages: [{
-              role: "user",
-              content: [
-                { type: "text", text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values." },
-                { type: "image_url", image_url: { url: frame } }
-              ]
-            }]
-          })
+            messages: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Analyze this image and identify any consumer products, food items, beverages, or packaged goods. Return a JSON object with: brand, name, material, description, net_weight, measurement_unit. If no products found, return null values.",
+                  },
+                  { type: "image_url", image_url: { url: frame } },
+                ],
+              },
+            ],
+          }),
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           const content = result.choices?.[0]?.message?.content;
@@ -70,7 +107,7 @@ async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKe
             return NextResponse.json({
               success: true,
               data: JSON.stringify({
-                detections: [JSON.parse(content)]
+                detections: [JSON.parse(content)],
               }),
               error: null,
             });
@@ -82,7 +119,7 @@ async function tryFallbackAPIs(frame: string, geminiApiKey?: string, geminiApiKe
       continue;
     }
   }
-  
+
   // If all APIs fail, return error
   return NextResponse.json(
     { success: false, error: "All AI APIs failed" },
@@ -109,7 +146,13 @@ export async function POST(request: NextRequest) {
     const geminiApiKey3 = process.env.GEMINI_API_KEY3;
     const openaiApiKey = process.env.OPENAI_API_KEY;
 
-    if (!moondreamApiKey && !geminiApiKey && !geminiApiKey2 && !geminiApiKey3 && !openaiApiKey) {
+    if (
+      !moondreamApiKey &&
+      !geminiApiKey &&
+      !geminiApiKey2 &&
+      !geminiApiKey3 &&
+      !openaiApiKey
+    ) {
       console.error("Moondream API: No API keys configured");
       return NextResponse.json(
         { success: false, error: "No API keys configured" },
@@ -118,6 +161,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Moondream API: Starting scan request");
+
+    // If no Moondream API key, try fallback APIs directly
+    if (!moondreamApiKey) {
+      console.log("No Moondream API key, trying fallback APIs directly...");
+      return await tryFallbackAPIs(
+        frame,
+        geminiApiKey,
+        geminiApiKey2,
+        geminiApiKey3,
+        openaiApiKey
+      );
+    }
 
     // Step 1: Query for product objects using the two-step process
     const objectPrompt = `List all consumer products, food items, beverages, or packaged goods you can see in this image. Return your answer as a simple comma-separated list of product names.`;
@@ -145,10 +200,16 @@ export async function POST(request: NextRequest) {
         queryResponse.status,
         errorText
       );
-      
+
       // Try fallback APIs if Moondream fails
       console.log("Moondream failed, trying fallback APIs...");
-      return await tryFallbackAPIs(frame, geminiApiKey, geminiApiKey2, geminiApiKey3, openaiApiKey);
+      return await tryFallbackAPIs(
+        frame,
+        geminiApiKey,
+        geminiApiKey2,
+        geminiApiKey3,
+        openaiApiKey
+      );
     }
 
     const queryResult = await queryResponse.json();

@@ -28,6 +28,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Test the Moondream API with a simple request using the correct approach
+    if (!moondreamApiKey) {
+      return NextResponse.json({
+        status: "warning",
+        message: "Moondream API key not configured, but fallback APIs available",
+        hasApiKey: false,
+        availableApis: availableApis,
+      });
+    }
+
     const testResponse = await fetch("https://api.moondream.ai/v1/query", {
       method: "POST",
       headers: {
