@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
     if (!moondreamApiKey) {
       return NextResponse.json({
         status: "warning",
-        message: "Moondream API key not configured, but fallback APIs available",
+        message:
+          "Moondream API key not configured, but fallback APIs available",
         hasApiKey: false,
         availableApis: availableApis,
       });
