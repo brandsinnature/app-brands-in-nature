@@ -259,8 +259,7 @@ export default function ScannerComponent() {
   const resumeScanning = useCallback(
     async (forceResume = false) => {
       await enableCamera(true);
-      toast.info("Scanning starting in 3 seconds...");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setShouldScan(true);
       // Trigger a new scan if not already scanning
       if (!isScanning) {
