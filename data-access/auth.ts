@@ -9,13 +9,17 @@ import { redirect } from "next/navigation";
 export async function login(loginForm: ILoginForm) {
   const client = createClient();
 
-  console.log(`Redirect link: ${process.env.META_URL}/scan`);
+  // Force the redirect URL to use production domain
+  const redirectUrl = process.env.META_URL || 'https://mybins.vercel.app';
+  const fullRedirectUrl = `${redirectUrl}/scan`;
+  
+  console.log(`Redirect link: ${fullRedirectUrl}`);
 
   const { error } = await client.auth.signInWithOtp({
     ...loginForm,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${process.env.META_URL}/scan`,
+      emailRedirectTo: fullRedirectUrl,
     },
   });
 
