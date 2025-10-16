@@ -11,7 +11,7 @@ export async function login(loginForm: ILoginForm) {
 
   // Force the redirect URL to use production domain
   const redirectUrl = process.env.META_URL || "https://mybins.vercel.app";
-  const fullRedirectUrl = `${redirectUrl}/scan`;
+  const fullRedirectUrl = `${redirectUrl}/auth/confirm?next=/scan`;
 
   console.log(`Redirect link: ${fullRedirectUrl}`);
 
