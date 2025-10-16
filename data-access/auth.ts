@@ -15,7 +15,7 @@ export async function login(loginForm: ILoginForm) {
     ...loginForm,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${process.env.META_URL}/auth/confirm?next=/scan`,
+      emailRedirectTo: `${process.env.META_URL}/scan`,
     },
   });
 
