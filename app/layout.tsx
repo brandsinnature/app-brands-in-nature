@@ -3,6 +3,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
 import { poppins, voska, voskaOutline } from "@/lib/font";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
     title: {
@@ -31,6 +33,8 @@ export default function RootLayout({
                 >
                     {children}
                 </ThemeProvider>
+                <SpeedInsights />
+                <Analytics />
             </body>
         </html>
     );
