@@ -78,13 +78,32 @@ export async function insertQRCodes(
     created_by: c.created_by,
   }));
 
-  const { data, error } = await supabase
-    .from("qr_codes")
-    .insert(rows)
-    .select("id, serial");
+  // Insert with retry on unique constraint violation (serial collision).
+  // Collision is near-impossible (timestamp + 10 random chars = 3.66×10^15 per ms)
+  // but we handle it anyway because this is a financial system (deposits are real money).
+  const MAX_RETRIES = 3;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const { data, error } = await supabase
+      .from("qr_codes")
+      .insert(rows)
+      .select("id, serial");
 
-  if (error) return { error: error.message };
-  return { data };
+    if (!error) return { data };
+
+    // Check if it's a unique constraint violation (Postgres error 23505)
+    if (error.code === "23505" && attempt < MAX_RETRIES - 1) {
+      console.warn(`[qr] Serial collision on attempt ${attempt + 1}, regenerating...`);
+      // Regenerate serials for the colliding rows and retry
+      // In practice this never happens — but if it does, we handle it.
+      const { generateSerial } = await import("@/lib/qr/serial");
+      rows.forEach((row) => { row.serial = generateSerial(); });
+      continue;
+    }
+
+    return { error: error.message };
+  }
+
+  return { error: "Insert failed after max retries" };
 }
 
 export async function getQRBySerial(serial: string): Promise<QRRecord | null> {

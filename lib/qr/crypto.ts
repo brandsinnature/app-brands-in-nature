@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { customAlphabet } from "nanoid";
 import barcoder from "barcoder";
 
 // --- Key Management ---
@@ -10,14 +9,13 @@ const SIGNING_KEYS: Record<number, string> = {
 };
 const CURRENT_KEY_VERSION = 1;
 
-// --- Serial Generation (nanoid, cryptographic, URL-safe) ---
-// Alphabet: 0-9 A-Z (36 chars). Length: 16.
-// Combinations: 36^16 = 7.96 × 10^24. Collision probability negligible at billions of codes.
-const generateId = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 16);
-
-export function generateSerial(): string {
-  return `BIN${generateId()}`;
-}
+// --- Serial Generation ---
+// Re-exported from serial.ts for backward compatibility.
+// See serial.ts for the full uniqueness guarantee:
+//   1. Timestamp (ms precision) + cryptographic random = structurally unique
+//   2. In-memory dedup set = catches same-process collisions
+//   3. DB UNIQUE constraint + retry = final safety net
+export { generateSerial, isValidSerial, getSerialTimestamp } from "./serial";
 
 // --- GTIN Validation (uses barcoder for check-digit) ---
 export function validateGTIN(gtin: string): { valid: boolean; error?: string } {
